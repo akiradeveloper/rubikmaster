@@ -42,6 +42,14 @@ pub const MOVE: [Move; 18] = [
     Move::y,
     Move::z,
 ];
+
+/// Representation of Cube Notation.
+///
+/// Example:
+/// - R2 is represented as a pair of ratation and repeatance (R,2).
+/// - R' is represented as (R,-1).
+///
+/// Repeatance should be non-zero and [-2,2].
 #[derive(Clone, Copy, Debug)]
 pub struct Command(pub Move, pub i8);
 impl Command {
@@ -68,6 +76,7 @@ pub const SURFACE: [Surface; 6] = [
     Surface::L,
 ];
 
+/// Generate a scramble sequence.
 pub fn random(n: usize) -> Vec<Command> {
     use rand::prelude::*;
     let mut rng = rand::thread_rng();

@@ -1,3 +1,4 @@
+/// Permutation i -> p[i]
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct Permutation {
     inner: [usize; 54],
@@ -13,7 +14,7 @@ impl std::ops::Index<usize> for Permutation {
         &self.inner[i]
     }
 }
-
+/// Matrix representation of a `Permutation`.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct PermutationMatrix {
     pub perms: Permutation,

@@ -10,10 +10,13 @@ mod math;
 pub use math::Permutation;
 pub use math::PermutationMatrix;
 
+/// Conversion function from position in a surface to
+/// a index in permutation.
 pub fn pos(surface: Surface, i: usize, j: usize) -> usize {
     let n = surface as usize;
     9 * n + 3 * i + j
 }
+/// Inverse function of `pos`.
 pub fn pos_inv(mut k: usize) -> (Surface, usize, usize) {
     let n = k / 9;
     k -= 9 * n;
@@ -192,28 +195,12 @@ impl Cache {
         v
     }
 }
-#[test]
-fn test_cancel() {
-    let mut cache = Cache::new();
-    for mov in MOVE {
-        let f = cache.get(mov, 1);
-        let g = cache.get(mov, -1);
-        assert_eq!(g * f, PermutationMatrix::identity());
-    }
-}
-#[test]
-fn test_4times() {
-    let mut cache = Cache::new();
-    for mov in MOVE {
-        let f = cache.get(mov, 4);
-        assert_eq!(f, PermutationMatrix::identity());
-    }
-}
 
 static CACHE: Lazy<Mutex<Cache>> = Lazy::new(|| {
     let cache = Cache::new();
     Mutex::new(cache)
 });
+/// Get permutation from a `Command`.
 pub fn of(c: Command) -> PermutationMatrix {
     let mut cache = CACHE.lock().unwrap();
     cache.get(c.0, c.1)
@@ -222,6 +209,39 @@ pub fn of(c: Command) -> PermutationMatrix {
 mod tests {
     use super::*;
     use proptest::prelude::*;
+
+    #[test]
+    fn test_cancel() {
+        for mov in MOVE {
+            let f = of(Command(mov, 1));
+            let g = of(Command(mov, -1));
+            assert_eq!(g * f, PermutationMatrix::identity());
+        }
+    }
+    #[test]
+    fn test_4times() {
+        for mov in MOVE {
+            let f = of(Command(mov, 4));
+            assert_eq!(f, PermutationMatrix::identity());
+        }
+    }
+    #[test]
+    fn test_sexy_move_6times() {
+        let mut sexy = PermutationMatrix::identity();
+        for com in [
+            of(Command(Move::R, 1)),
+            of(Command(Move::U, 1)),
+            of(Command(Move::R, -1)),
+            of(Command(Move::U, -1)),
+        ] {
+            sexy = com * sexy;
+        }
+        let mut mat = PermutationMatrix::identity();
+        for _ in 0..6 {
+            mat = sexy * mat;
+        }
+        assert_eq!(mat, PermutationMatrix::identity());
+    }
 
     fn arb_op() -> impl Strategy<Value = Move> {
         any::<u32>().prop_map(|x| {
