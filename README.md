@@ -1,5 +1,9 @@
 # Rubik Master
 
+[![Crates.io](https://img.shields.io/crates/v/rubikmaster.svg)](https://crates.io/crates/rubikmaster)
+[![documentation](https://docs.rs/rubikmaster/badge.svg)](https://docs.rs/rubikmaster)
+[![Tokei](https://tokei.rs/b1/github/akiradeveloper/rubikmaster)](https://github.com/akiradeveloper/rubikmaster)
+
 Do you like to solve Rubik's cube? I do.
 
 As a cuber and programmer, I want to build a
