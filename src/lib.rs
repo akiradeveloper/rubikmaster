@@ -1,3 +1,4 @@
+pub mod cfop;
 pub mod matrix;
 mod parser;
 

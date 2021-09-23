@@ -7,8 +7,7 @@ use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
 mod math;
-pub use math::Permutation;
-pub use math::PermutationMatrix;
+pub use math::{Permutation, PermutationMatrix};
 
 /// Conversion function from position in a surface to
 /// a index in permutation.
@@ -29,6 +28,22 @@ pub fn pos_inv(mut k: usize) -> (Surface, usize, usize) {
 fn test_pos() {
     assert_eq!(pos(Surface::F, 2, 2), 26);
     assert_eq!(pos_inv(26), (Surface::F, 2, 2));
+}
+
+/// Check if the colors on the given `positions` are the same.
+pub fn same_color_check<const N: usize>(mat: &PermutationMatrix, positions: [usize; N]) -> bool {
+    let inv = mat.inv_perm;
+    let mut color_list = [Surface::B; N];
+    for i in 0..N {
+        let pos = inv[positions[i]];
+        let (c, _, _) = pos_inv(pos);
+        color_list[i] = c;
+    }
+    let mut b = true;
+    for i in 0..N {
+        b &= color_list[i] == color_list[(i + 1) % N];
+    }
+    b
 }
 struct Arrow(pub usize, pub usize);
 fn surface_permutator(mov: Surface) -> Vec<Arrow> {
@@ -58,14 +73,14 @@ fn edge_permutator(edges: [(Surface, [(usize, usize); 3]); 4]) -> Vec<Arrow> {
     v
 }
 fn from_arrows(arrows: Vec<Arrow>) -> PermutationMatrix {
-    let mut perms = [0; 54];
+    let mut perm = [0; 54];
     for j in 0..54 {
-        perms[j] = j;
+        perm[j] = j;
     }
     for Arrow(from, to) in arrows {
-        perms[from] = to;
+        perm[from] = to;
     }
-    PermutationMatrix::new(Permutation::new(perms))
+    PermutationMatrix::op(Permutation::new(perm))
 }
 fn concat(mut x: Vec<Arrow>, mut y: Vec<Arrow>) -> Vec<Arrow> {
     x.append(&mut y);

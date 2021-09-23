@@ -4,8 +4,22 @@ pub struct Permutation {
     inner: [usize; 54],
 }
 impl Permutation {
-    pub fn new(perms: [usize; 54]) -> Self {
-        Self { inner: perms }
+    pub fn new(perm: [usize; 54]) -> Self {
+        Self { inner: perm }
+    }
+    fn inv(self) -> Self {
+        let mut inv = [0; 54];
+        for i in 0..54 {
+            inv[self.inner[i]] = i;
+        }
+        Self { inner: inv }
+    }
+    fn identity() -> Self {
+        let mut inner = [0; 54];
+        for i in 0..54 {
+            inner[i] = i;
+        }
+        Self { inner }
     }
 }
 impl std::ops::Index<usize> for Permutation {
@@ -17,35 +31,28 @@ impl std::ops::Index<usize> for Permutation {
 /// Matrix representation of a `Permutation`.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct PermutationMatrix {
-    pub perms: Permutation,
+    /// Inversion of permutation.
+    pub inv_perm: [usize; 54],
 }
 impl PermutationMatrix {
     pub fn identity() -> Self {
-        let mut perms = [0; 54];
-        for i in 0..54 {
-            perms[i] = i;
-        }
         PermutationMatrix {
-            perms: Permutation::new(perms),
+            inv_perm: Permutation::identity().inner,
         }
     }
-    pub fn new(perms: Permutation) -> Self {
-        PermutationMatrix { perms }
+    pub fn op(perm: Permutation) -> Self {
+        PermutationMatrix {
+            inv_perm: perm.inv().inner,
+        }
     }
     pub fn inv(self) -> Self {
-        let mut inv = [0; 54];
-        for i in 0..54 {
-            inv[self.perms[i]] = i;
-        }
-        PermutationMatrix {
-            perms: Permutation::new(inv),
-        }
+        PermutationMatrix::op(Permutation::new(self.inv_perm))
     }
     fn apply(self, to: Self) -> Self {
         // I think these arguments should be in reverse order but
         // the comparing with reference impl says it's okay.
-        let perms = gather(&self.perms.inner, &to.perms.inner);
-        Self::new(Permutation::new(perms))
+        let out = gather(&to.inv_perm, &self.inv_perm);
+        Self { inv_perm: out }
     }
 }
 impl std::ops::Mul for PermutationMatrix {
@@ -115,7 +122,7 @@ mod tests {
         for i in 0..54 {
             perm[i] = v[i];
         }
-        PermutationMatrix::new(Permutation::new(perm))
+        PermutationMatrix::op(Permutation::new(perm))
     }
     fn to_na_mat(v: Vec<usize>) -> SMatrix<f64, 54, 54> {
         let mut mat: SMatrix<f64, 54, 54> = nalgebra::SMatrix::zeros();
@@ -125,14 +132,14 @@ mod tests {
         mat
     }
     fn into_mat(m: SMatrix<f64, 54, 54>) -> PermutationMatrix {
-        let mut perms = [0; 54];
+        let mut perm = [0; 54];
         for i in 0..54 {
             for j in 0..54 {
                 if m[(i, j)] == 1. {
-                    perms[i] = j;
+                    perm[i] = j;
                 }
             }
         }
-        PermutationMatrix::new(Permutation::new(perms))
+        PermutationMatrix::op(Permutation::new(perm))
     }
 }
