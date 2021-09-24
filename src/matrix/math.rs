@@ -29,7 +29,7 @@ impl std::ops::Index<usize> for Permutation {
     }
 }
 /// Matrix representation of a `Permutation`.
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub struct PermutationMatrix {
     /// Inversion of permutation.
     pub inv_perm: [usize; 54],
