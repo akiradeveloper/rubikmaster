@@ -1,6 +1,6 @@
 pub mod cfop;
 pub mod matrix;
-mod parser;
+pub mod parser;
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 pub enum Move {
@@ -51,7 +51,7 @@ pub const MOVE: [Move; 18] = [
 /// - R' is represented as (R,-1).
 ///
 /// Repeatance should be non-zero and [-2,2].
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Command(pub Move, pub i8);
 impl Command {
     pub fn prime(self) -> Self {
