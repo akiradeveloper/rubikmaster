@@ -1,21 +1,22 @@
 pub mod cfop;
+pub mod coord;
 pub mod matrix;
 pub mod parser;
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 pub enum Move {
+    R,
+    L,
     U,
     D,
     F,
     B,
-    R,
-    L,
+    r,
+    l,
     u,
     d,
     f,
     b,
-    r,
-    l,
     M,
     E,
     S,
@@ -23,19 +24,19 @@ pub enum Move {
     y,
     z,
 }
-pub const MOVE: [Move; 18] = [
+pub const MOVE_LIST: [Move; 18] = [
+    Move::R,
+    Move::L,
     Move::U,
     Move::D,
     Move::F,
     Move::B,
-    Move::R,
-    Move::L,
+    Move::r,
+    Move::l,
     Move::u,
     Move::d,
     Move::f,
     Move::b,
-    Move::r,
-    Move::l,
     Move::M,
     Move::E,
     Move::S,
@@ -59,22 +60,56 @@ impl Command {
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum Elem {
+    One(Command),
+    Group(Vec<Command>, i8),
+}
+/// Turn a move sequence into a sequence without parentheses.
+pub fn flatten(elems: Vec<Elem>) -> Vec<Command> {
+    let mut v = vec![];
+    for e in elems {
+        match e {
+            Elem::One(c) => v.push(c),
+            Elem::Group(cs, rep) => {
+                if rep > 0 {
+                    for _ in 0..rep {
+                        for &c in &cs {
+                            v.push(c);
+                        }
+                    }
+                } else {
+                    let rep = -rep;
+                    let mut cs = cs;
+                    cs.reverse();
+                    for _ in 0..rep {
+                        for &c in &cs {
+                            v.push(c)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    v
+}
+
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum Surface {
+    R,
+    L,
     U,
     D,
     F,
     B,
-    R,
-    L,
 }
-pub const SURFACE: [Surface; 6] = [
+pub const SURFACE_LIST: [Surface; 6] = [
+    Surface::R,
+    Surface::L,
     Surface::U,
     Surface::D,
     Surface::F,
     Surface::B,
-    Surface::R,
-    Surface::L,
 ];
 
 /// Generate a scramble sequence.
@@ -84,7 +119,7 @@ pub fn random(n: usize) -> Vec<Command> {
     let mut v = vec![];
     for _ in 0..n {
         let mov: usize = rng.gen();
-        let mov = MOVE[mov % 18];
+        let mov = MOVE_LIST[mov % 18];
         let rep: usize = rng.gen();
         let rep = rep % 3 + 1;
         v.push(Command(mov, rep as i8));

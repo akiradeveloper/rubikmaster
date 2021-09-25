@@ -1,42 +1,22 @@
 //! Cube's state is expressed as permutation matrix
 //! and operations are matrix multiplications.
 
+use crate::coord::{surface_number, surface_number_inv};
 use crate::Command;
-use crate::{Move, Surface, MOVE, SURFACE};
+use crate::{Move, Surface, MOVE_LIST, SURFACE_LIST};
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
 mod math;
 pub use math::{Permutation, PermutationMatrix};
 
-/// Conversion function from position in a surface to
-/// a index in permutation.
-pub fn pos(surface: Surface, i: usize, j: usize) -> usize {
-    let n = surface as usize;
-    9 * n + 3 * i + j
-}
-/// Inverse function of `pos`.
-pub fn pos_inv(mut k: usize) -> (Surface, usize, usize) {
-    let n = k / 9;
-    k -= 9 * n;
-    let i = k / 3;
-    k -= 3 * i;
-    let j = k;
-    (SURFACE[n], i, j)
-}
-#[test]
-fn test_pos() {
-    assert_eq!(pos(Surface::F, 2, 2), 26);
-    assert_eq!(pos_inv(26), (Surface::F, 2, 2));
-}
-
 /// Check if the colors on the given `positions` are the same.
-pub fn same_color_check<const N: usize>(mat: &PermutationMatrix, positions: [usize; N]) -> bool {
+pub(crate) fn same_color_check<const N: usize>(mat: &PermutationMatrix, positions: [usize; N]) -> bool {
     let inv = mat.inv_perm;
     let mut color_list = [Surface::B; N];
     for i in 0..N {
         let pos = inv[positions[i]];
-        let (c, _, _) = pos_inv(pos);
+        let (c, _, _) = surface_number_inv(pos);
         color_list[i] = c;
     }
     let mut b = true;
@@ -48,14 +28,14 @@ pub fn same_color_check<const N: usize>(mat: &PermutationMatrix, positions: [usi
 struct Arrow(pub usize, pub usize);
 fn surface_permutator(mov: Surface) -> Vec<Arrow> {
     vec![
-        Arrow(pos(mov, 0, 0), pos(mov, 0, 2)),
-        Arrow(pos(mov, 0, 1), pos(mov, 1, 2)),
-        Arrow(pos(mov, 0, 2), pos(mov, 2, 2)),
-        Arrow(pos(mov, 1, 0), pos(mov, 0, 1)),
-        Arrow(pos(mov, 1, 2), pos(mov, 2, 1)),
-        Arrow(pos(mov, 2, 0), pos(mov, 0, 0)),
-        Arrow(pos(mov, 2, 1), pos(mov, 1, 0)),
-        Arrow(pos(mov, 2, 2), pos(mov, 2, 0)),
+        Arrow(surface_number(mov, 0, 0), surface_number(mov, 0, 2)),
+        Arrow(surface_number(mov, 0, 1), surface_number(mov, 1, 2)),
+        Arrow(surface_number(mov, 0, 2), surface_number(mov, 2, 2)),
+        Arrow(surface_number(mov, 1, 0), surface_number(mov, 0, 1)),
+        Arrow(surface_number(mov, 1, 2), surface_number(mov, 2, 1)),
+        Arrow(surface_number(mov, 2, 0), surface_number(mov, 0, 0)),
+        Arrow(surface_number(mov, 2, 1), surface_number(mov, 1, 0)),
+        Arrow(surface_number(mov, 2, 2), surface_number(mov, 2, 0)),
     ]
 }
 fn edge_permutator(edges: [(Surface, [(usize, usize); 3]); 4]) -> Vec<Arrow> {
@@ -65,8 +45,8 @@ fn edge_permutator(edges: [(Surface, [(usize, usize); 3]); 4]) -> Vec<Arrow> {
         let (surface_y, edges_y) = edges[(k + 1) % 4];
         for i in 0..3 {
             v.push(Arrow(
-                pos(surface_x, edges_x[i].0, edges_x[i].1),
-                pos(surface_y, edges_y[i].0, edges_y[i].1),
+                surface_number(surface_x, edges_x[i].0, edges_x[i].1),
+                surface_number(surface_y, edges_y[i].0, edges_y[i].1),
             ));
         }
     }
@@ -227,7 +207,7 @@ mod tests {
 
     #[test]
     fn test_cancel() {
-        for mov in MOVE {
+        for mov in MOVE_LIST {
             let f = of(Command(mov, 1));
             let g = of(Command(mov, -1));
             assert_eq!(g * f, PermutationMatrix::identity());
@@ -235,7 +215,7 @@ mod tests {
     }
     #[test]
     fn test_4times() {
-        for mov in MOVE {
+        for mov in MOVE_LIST {
             let f = of(Command(mov, 4));
             assert_eq!(f, PermutationMatrix::identity());
         }
@@ -261,7 +241,7 @@ mod tests {
     fn arb_op() -> impl Strategy<Value = Move> {
         any::<u32>().prop_map(|x| {
             let i = (x % 18) as usize;
-            MOVE[i]
+            MOVE_LIST[i]
         })
     }
     prop_compose! {

@@ -1,7 +1,7 @@
 //! Parse ratation sequence like (RUR')U'(R'FR)F'
 //!
 //! Syntax:
-//! - Move -> U|D|F|B|F|L ...
+//! - Move -> R|L|U|D|F|B| ...
 //! - Double -> 2 | ε
 //! - Prime -> ' | ε
 //! - Rep -> Double Prime
@@ -10,29 +10,29 @@
 //! - Elem -> Command | Group
 //! - Seq -> Elem+
 
-use crate::{Command, Move};
+use crate::{Command, Elem, Move};
 
 use nom::branch::alt;
 use nom::character::complete::{char, one_of, space0};
 use nom::combinator::{all_consuming, map};
-use nom::multi::{many1, many_m_n, separated_list0, separated_list1};
+use nom::multi::{many0, many1, many_m_n, separated_list0, separated_list1};
 use nom::sequence::{delimited, pair};
 use nom::IResult;
 
 fn parse_move(i: &str) -> IResult<&str, Move> {
     map(one_of("UDFBRLudfbrlMESxyz"), |c| match c {
+        'R' => Move::R,
+        'L' => Move::L,
         'U' => Move::U,
         'D' => Move::D,
         'F' => Move::F,
         'B' => Move::B,
-        'R' => Move::R,
-        'L' => Move::L,
+        'r' => Move::r,
+        'l' => Move::l,
         'u' => Move::u,
         'd' => Move::d,
         'f' => Move::f,
         'b' => Move::b,
-        'r' => Move::r,
-        'l' => Move::l,
         'M' => Move::M,
         'E' => Move::E,
         'S' => Move::S,
@@ -86,19 +86,16 @@ fn parse_elem(i: &str) -> IResult<&str, Elem> {
     let p2 = map(parse_group, |(xs, rep)| Elem::Group(xs, rep));
     alt((p1, p2))(i)
 }
-#[derive(Debug, PartialEq, Eq)]
-pub enum Elem {
-    One(Command),
-    Group(Vec<Command>, i8),
-}
+
 pub fn parse(i: &str) -> IResult<&str, Vec<Elem>> {
-    let p = many1(parse_elem);
+    let p = many0(parse_elem);
     all_consuming(p)(i)
 }
 #[test]
 fn test_parse() {
     use Elem::*;
     use Move::*;
+    assert_eq!(parse("").unwrap().1, vec![]);
     assert_eq!(parse("R").unwrap().1, vec![One(Command(R, 1))]);
     assert_eq!(parse("R2'").unwrap().1, vec![One(Command(R, -2))]);
     assert!(parse("R'2").is_err());
