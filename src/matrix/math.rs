@@ -127,16 +127,16 @@ mod tests {
     fn to_na_mat(v: Vec<usize>) -> SMatrix<f64, 54, 54> {
         let mut mat: SMatrix<f64, 54, 54> = nalgebra::SMatrix::zeros();
         for i in 0..54 {
-            mat[(i, v[i])] = 1.;
+            mat[(v[i], i)] = 1.;
         }
         mat
     }
     fn into_mat(m: SMatrix<f64, 54, 54>) -> PermutationMatrix {
         let mut perm = [0; 54];
-        for i in 0..54 {
-            for j in 0..54 {
+        for j in 0..54 {
+            for i in 0..54 {
                 if m[(i, j)] == 1. {
-                    perm[i] = j;
+                    perm[j] = i;
                 }
             }
         }
