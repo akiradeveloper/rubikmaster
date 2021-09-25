@@ -48,12 +48,9 @@ fn parse_double(i: &str) -> IResult<&str, bool> {
 fn parse_prime(i: &str) -> IResult<&str, bool> {
     map(many_m_n(0, 1, char('\'')), |v| v.len() > 0)(i)
 }
-fn parse_rep(i: &str) -> IResult<&str, (bool, bool)> {
-    pair(parse_double, parse_prime)(i)
-}
-fn parse_command(i: &str) -> IResult<&str, Command> {
-    let f = pair(parse_move, parse_rep);
-    map(f, |(mov, (double, prime))| {
+struct Rep(i8);
+fn parse_rep(i: &str) -> IResult<&str, Rep> {
+    map(pair(parse_double, parse_prime), |(double, prime)| {
         let mut rep = 1;
         if double {
             rep = 2;
@@ -61,8 +58,12 @@ fn parse_command(i: &str) -> IResult<&str, Command> {
         if prime {
             rep *= -1;
         }
-        Command(mov, rep)
+        Rep(rep)
     })(i)
+}
+fn parse_command(i: &str) -> IResult<&str, Command> {
+    let f = pair(parse_move, parse_rep);
+    map(f, |(mov, rep)| Command(mov, rep.0))(i)
 }
 fn parse_group(i: &str) -> IResult<&str, (Vec<Command>, i8)> {
     let p1 = char('(');
@@ -70,16 +71,7 @@ fn parse_group(i: &str) -> IResult<&str, (Vec<Command>, i8)> {
     let p3 = char(')');
     let f = delimited(p1, p2, p3);
     let f = pair(f, parse_rep);
-    map(f, |(xs, (double, prime))| {
-        let mut rep = 1;
-        if double {
-            rep = 2;
-        }
-        if prime {
-            rep *= -1;
-        }
-        (xs, rep)
-    })(i)
+    map(f, |(xs, rep)| (xs, rep.0))(i)
 }
 fn parse_elem(i: &str) -> IResult<&str, Elem> {
     let p1 = map(parse_command, |x| Elem::One(x));
