@@ -28,12 +28,16 @@ pub fn solved(mat: &PermutationMatrix) -> bool {
 /// Check if the F2L is solved.
 /// This function assumes the layer is the down two layers.
 pub fn f2l_solved(mat: &PermutationMatrix) -> bool {
-    same_color_check(mat, U)
-        && same_color_check(mat, D)
+    same_color_check(mat, D)
         && same_color_check(mat, F2)
         && same_color_check(mat, B2)
         && same_color_check(mat, R2)
         && same_color_check(mat, L2)
+}
+
+/// Check if the OLL is solved.
+pub fn oll_solved(mat: &PermutationMatrix) -> bool {
+    same_color_check(mat, U) && f2l_solved(&mat)
 }
 #[test]
 fn test_solved_no_effect() {
@@ -67,40 +71,40 @@ fn test_f2l_solved_ux() {
     let mut m = PermutationMatrix::identity();
     let u = matrix::of(Command(Move::U, 1));
     m = u * m;
-    assert!(f2l_solved(&m));
+    assert!(oll_solved(&m));
     let x = matrix::of(Command(Move::x, 1));
     m = x * m;
-    assert!(!f2l_solved(&m));
+    assert!(!oll_solved(&m));
 }
 #[test]
 fn test_f2l_solved_fx() {
     let mut m = PermutationMatrix::identity();
     let f = matrix::of(Command(Move::F, 1));
     m = f * m;
-    assert!(!f2l_solved(&m));
+    assert!(!oll_solved(&m));
     let x = matrix::of(Command(Move::x, 1));
     m = x * m;
-    assert!(f2l_solved(&m));
+    assert!(oll_solved(&m));
 }
 #[test]
 fn test_f2l_solved_lz() {
     let mut m = PermutationMatrix::identity();
     let f = matrix::of(Command(Move::L, 1));
     m = f * m;
-    assert!(!f2l_solved(&m));
+    assert!(!oll_solved(&m));
     let x = matrix::of(Command(Move::z, 1));
     m = x * m;
-    assert!(f2l_solved(&m));
+    assert!(oll_solved(&m));
 }
 #[test]
 fn test_f2l_solved_xu() {
     let mut m = PermutationMatrix::identity();
     let f = matrix::of(Command(Move::x, 1));
     m = f * m;
-    assert!(f2l_solved(&m));
+    assert!(oll_solved(&m));
     let x = matrix::of(Command(Move::U, 1));
     m = x * m;
-    assert!(f2l_solved(&m));
+    assert!(oll_solved(&m));
 }
 #[test]
 fn test_f2l_solved_no_effect() {
@@ -109,7 +113,7 @@ fn test_f2l_solved_no_effect() {
         let u = matrix::of(Command(mov, 1));
         for _ in 0..1000 {
             m = u * m;
-            assert!(f2l_solved(&m));
+            assert!(oll_solved(&m));
         }
     }
 }
@@ -129,15 +133,15 @@ fn test_f2l_solved_4times() {
         Move::l,
     ] {
         let c = matrix::of(Command(mov, 1));
-        assert!(f2l_solved(&m));
+        assert!(oll_solved(&m));
         m = c * m;
-        assert!(!f2l_solved(&m));
+        assert!(!oll_solved(&m));
         m = c * m;
-        assert!(!f2l_solved(&m));
+        assert!(!oll_solved(&m));
         m = c * m;
-        assert!(!f2l_solved(&m));
+        assert!(!oll_solved(&m));
         m = c * m;
-        assert!(f2l_solved(&m));
+        assert!(oll_solved(&m));
     }
 }
 
@@ -174,6 +178,84 @@ fn test_pll_list() {
         for c in cs {
             m = matrix::of(c) * m;
         }
+        m = m.inv();
+        assert!(!solved(&m));
+        assert!(oll_solved(&m));
+    }
+}
+
+pub const OLL_LIST: [&str; 57] = [
+    "RU2R2FRF'U2R'FRF'",
+    "rUr'U2rU2R'U2RU'r'",
+    "r'R2UR'UrU2r'UM'",
+    "MU'rU2r'U'RU'R'M'",
+    "l'U2LUL'Ul",
+    "rU2R'U'RU'r'",
+    "rUR'URU2r'",
+    "l'U'LU'L'U2l",
+    "RUR'U'R'FR2UR'U'F'",
+    "RUR'UR'FRF'RU2R'",
+    "rUR'UR'FRF'RU2r'",
+    "M'R'U'RU'R'U2RU'Rr'",
+    "FURU'R2F'RURU'R'",
+    "R'FRUR'F'RFU'F'",
+    "l'U'lL'U'LUl'Ul",
+    "rUr'RUR'U'rU'r'",
+    "FR'F'R2r'URU'R'U'M'",
+    "rUR'URU2r2U'RU'R'U2r",
+    "r'RURUR'U'M'R'FRF'",
+    "rUR'U'M2URU'R'U'M'",
+    "yRU2R'U'RUR'U'RU'R'",
+    "RU2R2U'R2U'R2U2R",
+    "R2DR'U2RD'R'U2R'",
+    "rUR'U'r'FRF'",
+    "yF'rUR'U'r'FR",
+    "yRU2R'U'RU'R'",
+    "RUR'URU2R'",
+    "rUR'U'MURU'R'",
+    "MURUR'U'R'FRF'M'",
+    "y2FURU2R'U'RU2R'U'F'",
+    "R'U'FURU'R'F'R",
+    "SRUR'U'R'FRf'",
+    "RUR'U'R'FRF'",
+    "y2RUR2U'R'FRURU'F'",
+    "RU2R2FRF'RU2R'",
+    "y2L'U'LU'L'ULULF'L'F",
+    "FRU'R'U'RUR'F'",
+    "RUR'URU'R'U'R'FRF'",
+    "yLF'L'U'LUFU'L'",
+    "yR'FRUR'U'F'UR",
+    "y2RUR'URU2R'FRUR'U'F'",
+    "R'U'RU'R'U2RFRUR'U'F'",
+    "f'L'U'LUf",
+    "fRUR'U'f'",
+    "FRUR'U'F'",
+    "R'U'R'FRF'UR",
+    "F'L'U'LUL'U'LUF",
+    "FRUR'U'RUR'U'F'",
+    "y2rU'r2Ur2Ur2U'r",
+    "r'Ur2U'r2U'r2Ur'",
+    "fRUR'U'RUR'U'f'",
+    "RUR'URd'RU'R'F'",
+    "r'U'RU'R'URU'R'U2r",
+    "rUR'URU'R'URU2r'",
+    "RU2R2U'RU'R'U2FRF'",
+    "rUr'URU'R'URU'R'rU'r'",
+    "RUR'U'M'URU'r'",
+];
+#[test]
+fn test_oll_list() {
+    let mut no = 0;
+    for seq in OLL_LIST {
+        no += 1;
+        println!("OLL-{}", no);
+        let mut m = PermutationMatrix::identity();
+        let elems = crate::parser::parse(&seq).unwrap().1;
+        let cs = crate::flatten(elems);
+        for c in cs {
+            m = matrix::of(c) * m;
+        }
+        m = m.inv();
         assert!(!solved(&m));
         assert!(f2l_solved(&m));
     }
