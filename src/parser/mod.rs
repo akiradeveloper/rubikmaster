@@ -1,4 +1,4 @@
-//! Parse ratation sequence like (RUR')U'(R'FR)F'
+//! Parse rotation sequence like (RUR')U'(R'FR)F'
 //!
 //! Syntax:
 //! - Move -> R|L|U|D|F|B| ...
