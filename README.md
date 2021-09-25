@@ -2,6 +2,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/rubikmaster.svg)](https://crates.io/crates/rubikmaster)
 [![documentation](https://docs.rs/rubikmaster/badge.svg)](https://docs.rs/rubikmaster)
+![CI](https://github.com/akiradeveloper/rubikmaster/workflows/CI/badge.svg)
 [![Tokei](https://tokei.rs/b1/github/akiradeveloper/rubikmaster)](https://github.com/akiradeveloper/rubikmaster)
 
 Do you like to solve Rubik's cube? I do.
