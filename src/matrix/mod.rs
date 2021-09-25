@@ -1,7 +1,7 @@
 //! Cube's state is expressed as permutation matrix
 //! and operations are matrix multiplications.
 
-use crate::coord::{surface_number, surface_number_inv};
+use crate::coord::{self, surface_number, surface_number_inv};
 use crate::Command;
 use crate::{Move, Surface, MOVE_LIST, SURFACE_LIST};
 use once_cell::sync::Lazy;
@@ -11,7 +11,10 @@ mod math;
 pub use math::{Permutation, PermutationMatrix};
 
 /// Check if the colors on the given `positions` are the same.
-pub(crate) fn same_color_check<const N: usize>(mat: &PermutationMatrix, positions: [usize; N]) -> bool {
+pub(crate) fn same_color_check<const N: usize>(
+    mat: &PermutationMatrix,
+    positions: [usize; N],
+) -> bool {
     let inv = mat.inv_perm;
     let mut color_list = [Surface::B; N];
     for i in 0..N {
@@ -24,6 +27,34 @@ pub(crate) fn same_color_check<const N: usize>(mat: &PermutationMatrix, position
         b &= color_list[i] == color_list[(i + 1) % N];
     }
     b
+}
+#[test]
+fn test_same_color_check() {
+    use Surface::*;
+    let mut m = PermutationMatrix::identity();
+    let c = of(Command(Move::R, 1));
+    m = c * m;
+
+    for _ in 0..1000 {
+        let l = [
+            (U, 0, 0),
+            (U, 0, 1),
+            (U, 0, 2),
+            (F, 0, 0),
+            (F, 0, 1),
+            (F, 1, 0),
+            (F, 1, 1),
+            (F, 2, 0),
+            (F, 2, 1),
+        ];
+        let mut list = [0; 9];
+        for k in 0..9 {
+            let (sur, i, j) = l[k];
+            list[k] = coord::surface_number(sur, i, j);
+        }
+        assert!(same_color_check(&m, list));
+        m = of(Command(Move::x, 1)) * m;
+    }
 }
 struct Arrow(pub usize, pub usize);
 fn surface_permutator(mov: Surface) -> Vec<Arrow> {
