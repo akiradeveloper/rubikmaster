@@ -13,14 +13,14 @@
 use crate::{Command, Elem, Move};
 
 use nom::branch::alt;
-use nom::character::complete::{char, one_of, space0};
+use nom::character::complete::{char, one_of};
 use nom::combinator::{all_consuming, map};
-use nom::multi::{many0, many1, many_m_n, separated_list0, separated_list1};
+use nom::multi::{many0, many1, many_m_n};
 use nom::sequence::{delimited, pair};
 use nom::IResult;
 
 fn parse_move(i: &str) -> IResult<&str, Move> {
-    map(one_of("UDFBRLudfbrlMESxyz"), |c| match c {
+    map(one_of("RLUDFBrludfbMESxyz"), |c| match c {
         'R' => Move::R,
         'L' => Move::L,
         'U' => Move::U,
