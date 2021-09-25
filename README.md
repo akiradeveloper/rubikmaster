@@ -22,7 +22,7 @@ the multiplication costs only O(54) since the matrix is sparse.
 This library will include the following modules:
 
 - [x] Core: Matrix and Operations.
-- [ ] Parser: The rotation notations like (RUR')U'(R'FR)F' should be interpreted.
+- [x] Parser: The rotation notations like (RUR')U'(R'FR)F' should be interpreted.
 - [ ] Virtual Cube component (WebGL and wasm): Will support features like animated rotation, guide arrow, camera move. **HELP WANTED**
 
 I am open to any suggestions.
