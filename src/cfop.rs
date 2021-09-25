@@ -53,12 +53,33 @@ fn test_solved() {
     }
 }
 #[test]
+fn test_f2l_solved_ux() {
+    let mut m = PermutationMatrix::identity();
+    let u = matrix::of(Command(Move::U, 1));
+    m = u*m;
+    assert!(f2l_solved(&m));
+    let x = matrix::of(Command(Move::x, 1));
+    m = x*m;
+    assert!(!f2l_solved(&m));
+}
+#[test]
+fn test_f2l_solved_fx() {
+    let mut m = PermutationMatrix::identity();
+    let f = matrix::of(Command(Move::F, 1));
+    m = f*m;
+    assert!(!f2l_solved(&m));
+    let x = matrix::of(Command(Move::x, 1));
+    m = x*m;
+    assert!(f2l_solved(&m));
+}
+#[test]
 fn test_f2l_solved_u() {
     let mut m = PermutationMatrix::identity();
     let u = matrix::of(Command(Move::U, 1));
-    assert!(f2l_solved(&m));
-    m = u * m;
-    assert!(f2l_solved(&m));
+    for _ in 0..100 {
+        m = u * m;
+        assert!(f2l_solved(&m));
+    }
 }
 #[test]
 fn test_f2l_solved_4times() {
@@ -77,20 +98,40 @@ fn test_f2l_solved_4times() {
     }
 }
 
-pub const PLL_LIST: [(&str, &str); 2] = [
-    ("Ub", "R2URUR'U'R'U'R'UR'"),
-    ("Ua", "RU'RURURU'R'U'R2"),
-    // TODO
+pub const PLL_LIST: [(&str, &str); 21] = [
+    ("Ub", "(R2'U)(RUR')(U'R'U')(R'UR')"),
+    ("Ua", "(RU'R)(URUR)(U'R'U'R2')"),
+    ("Ab", "xR2'(D2RUR')(D2RU'R)x'"),
+    ("Aa", "x(R'UR'D2)(RU'R'D2)R2x'"),
+    ("Z", "(M2UM2U)M'(U2M2U2)M'"),
+    ("H", "M2UM2U2M2UM2"),
+    ("E", "x'(RU'R'D)(RUR'D')(RUR'D)(RU'R'D')"),
+    ("T", "(RUR'U')(R'FR2U'R'U')(RUR'F')"),
+    ("V", "(R'UR'd')(R'F'R2U')(R'UR')(FRF)"),
+    ("F", "(R'U'F')(RUR'U')(R'FR2U'R'U')(RUR'UR)"),
+    ("Rb", "(R'U2RU2)(R'FRUR'U')(R'F'R2'U')"),
+    ("Ra", "(RU'R'U')(RURD)(R'U'RD')(R'U2R')"),
+    ("Jb", "(RUR'F')(RUR'U')(R'FR2U'R'U')"),
+    ("Ja", "(UR'U)(L'U2RU'R'U2)RL"),
+    ("Y", "(FRU'R'U')(RUR'F')(RUR'U')(R'FRF')"),
+    ("Gd", "D'(RUR')U'D(R2U'RU')(R'UR'UR2)"),
+    ("Gc", "(R2U'RU')(RUR'UR2)UD'(RU'R'D)"),
+    ("Ga", "R2u(R'UR'U'R)u'R2y'(R'UR)"),
+    ("Gb", "(R'U'R)yR2u(R'URU'R)u'R2"),
+    ("Nb", "(R'URU')(R'F'U')(FRUR'F)(R'F'RU'R)"),
+    ("Na", "(RUR'U)(RUR'F')(RUR'U')(R'FR2U'R'U2'RU'R')"),
 ];
 #[test]
 fn test_pll_list() {
-    for (_, seq) in PLL_LIST {
+    for (perm, seq) in PLL_LIST {
+        println!("perm={}",perm);
         let mut m = PermutationMatrix::identity();
         let elems = crate::parser::parse(&seq).unwrap().1;
         let cs = crate::flatten(elems);
         for c in cs {
             m = matrix::of(c) * m;
         }
-        assert!(!solved(&m) && f2l_solved(&m));
+        assert!(!solved(&m));
+        assert!(f2l_solved(&m));
     }
 }
