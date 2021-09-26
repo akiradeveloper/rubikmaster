@@ -84,7 +84,7 @@ pub fn flatten(elems: Vec<Elem>) -> Vec<Command> {
                     cs.reverse();
                     for _ in 0..rep {
                         for &c in &cs {
-                            v.push(c)
+                            v.push(c.prime())
                         }
                     }
                 }
@@ -92,6 +92,12 @@ pub fn flatten(elems: Vec<Elem>) -> Vec<Command> {
         }
     }
     v
+}
+#[test]
+fn test_flatten() {
+    let e = Elem::Group(vec![Command(Move::U, 1), Command(Move::R, 1)], -1);
+    let f = flatten(vec![e]);
+    assert_eq!(f, vec![Command(Move::R, -1), Command(Move::U, -1)]);
 }
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
