@@ -49,8 +49,6 @@ impl PermutationMatrix {
         PermutationMatrix::op(Permutation::new(self.inv_perm))
     }
     fn apply(self, to: Self) -> Self {
-        // I think these arguments should be in reverse order but
-        // the comparing with reference impl says it's okay.
         let out = gather(&self.inv_perm, &to.inv_perm);
         Self { inv_perm: out }
     }
