@@ -18,3 +18,4 @@ nom = "7"
 [dev-dependencies]
 proptest = "1.0"
 nalgebra = "0.29"
+itertools = "0.10"

@@ -7,6 +7,7 @@ use crate::{Move, Surface, MOVE_LIST, SURFACE_LIST};
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
+mod hash;
 mod math;
 pub use math::{Permutation, PermutationMatrix};
 
