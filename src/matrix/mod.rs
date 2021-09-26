@@ -5,6 +5,7 @@ use crate::coord::{self, surface_number, surface_number_inv};
 use crate::Command;
 use crate::{Move, Surface, MOVE_LIST, SURFACE_LIST};
 use once_cell::sync::Lazy;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use std::sync::Mutex;
 
 mod math;
@@ -230,6 +231,23 @@ static CACHE: Lazy<Mutex<Cache>> = Lazy::new(|| {
 pub fn of(c: Command) -> PermutationMatrix {
     let mut cache = CACHE.lock().unwrap();
     cache.get(c.0, c.1)
+}
+pub fn reduce(cs: Vec<Command>) -> PermutationMatrix {
+    use rayon::iter::IntoParallelIterator;
+    let it = cs.into_par_iter().map(|x| of(x));
+    it.reduce(|| PermutationMatrix::identity(), |acc, x| {
+        x * acc
+    })
+}
+#[test]
+fn test_reduce() {
+    let cs = vec![Command(Move::R, 1), Command(Move::U, 1), Command(Move::R, -1), Command(Move::U, -1)];
+    let mut a = PermutationMatrix::identity();
+    for &c in &cs {
+        a = of(c) * a;
+    }
+    let b = reduce(cs);
+    assert_eq!(b, a);
 }
 #[cfg(test)]
 mod tests {
