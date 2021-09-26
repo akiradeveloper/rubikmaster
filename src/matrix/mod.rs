@@ -15,7 +15,7 @@ pub(crate) fn same_color_check<const N: usize>(
     mat: &PermutationMatrix,
     positions: [usize; N],
 ) -> bool {
-    let inv = mat.inv_perm;
+    let inv = &mat.inv_perm;
     let mut color_list = [Surface::B; N];
     for i in 0..N {
         let pos = inv[positions[i]];
