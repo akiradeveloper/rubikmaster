@@ -26,7 +26,6 @@ pub fn solved(mat: &PermutationMatrix) -> bool {
 }
 
 /// Check if the F2L is solved.
-/// This function assumes the layer is the down two layers.
 pub fn f2l_solved(mat: &PermutationMatrix) -> bool {
     same_color_check(mat, D)
         && same_color_check(mat, F2)
