@@ -1,3 +1,5 @@
+use core_simd::Simd;
+
 /// Permutation i -> p[i]
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct Permutation {
@@ -49,7 +51,7 @@ impl PermutationMatrix {
         PermutationMatrix::op(Permutation::new(self.inv_perm))
     }
     fn apply(self, to: Self) -> Self {
-        let out = gather(&self.inv_perm, &to.inv_perm);
+        let out = gather_simd(&self.inv_perm, &to.inv_perm);
         Self { inv_perm: out }
     }
 }
@@ -65,6 +67,28 @@ fn gather(index: &[u8; 54], v: &[u8; 54]) -> [u8; 54] {
         let k = index[i];
         let j = v[k as usize];
         out[i] = j;
+    }
+    out
+}
+fn gather_simd(index: &[u8;54], v: &[u8;54]) -> [u8;54] {
+    let mut idx0 = [55;32];
+    let mut idx1 = [55;32];
+    for i in 0..32 {
+        idx0[i] = index[i] as usize;
+    }
+    for i in 0..22 {
+        idx1[i] = index[i+32] as usize;
+    }
+    let idx0 = Simd::from_array(idx0);
+    let idx1 = Simd::from_array(idx1);
+    let res0 = Simd::gather_or_default(v, idx0);
+    let res1 = Simd::gather_or_default(v, idx1);
+    let mut out = [0;54];
+    for i in 0..32 {
+        out[i] = res0[i];
+    }
+    for i in 0..22 {
+        out[i+32] = res1[i];
     }
     out
 }

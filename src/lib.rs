@@ -1,3 +1,5 @@
+#![feature(portable_simd)]
+
 pub mod cfop;
 pub mod coord;
 pub mod matrix;
