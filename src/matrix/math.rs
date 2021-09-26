@@ -1,38 +1,38 @@
 /// Permutation i -> p[i]
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct Permutation {
-    inner: [usize; 54],
+    inner: [u8; 54],
 }
 impl Permutation {
-    pub fn new(perm: [usize; 54]) -> Self {
+    pub fn new(perm: [u8; 54]) -> Self {
         Self { inner: perm }
     }
     fn inv(self) -> Self {
         let mut inv = [0; 54];
         for i in 0..54 {
-            inv[self.inner[i]] = i;
+            inv[self.inner[i as usize] as usize] = i;
         }
         Self { inner: inv }
     }
     fn identity() -> Self {
-        let mut inner = [0; 54];
+        let mut inner = [0u8; 54];
         for i in 0..54 {
-            inner[i] = i;
+            inner[i] = i as u8;
         }
         Self { inner }
     }
 }
-impl std::ops::Index<usize> for Permutation {
-    type Output = usize;
-    fn index(&self, i: usize) -> &usize {
-        &self.inner[i]
+impl std::ops::Index<u8> for Permutation {
+    type Output = u8;
+    fn index(&self, i: u8) -> &u8 {
+        &self.inner[i as usize]
     }
 }
 /// Matrix representation of a `Permutation`.
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub struct PermutationMatrix {
     /// Inversion of permutation.
-    pub inv_perm: [usize; 54],
+    pub inv_perm: [u8; 54],
 }
 impl PermutationMatrix {
     pub fn identity() -> Self {
@@ -61,11 +61,11 @@ impl std::ops::Mul for PermutationMatrix {
         self.apply(rhs)
     }
 }
-fn gather(index: &[usize; 54], v: &[usize; 54]) -> [usize; 54] {
+fn gather(index: &[u8; 54], v: &[u8; 54]) -> [u8; 54] {
     let mut out = [0; 54];
     for i in 0..54 {
         let k = index[i];
-        let j = v[k];
+        let j = v[k as usize];
         out[i] = j;
     }
     out
@@ -77,7 +77,7 @@ mod tests {
     use nalgebra::*;
     use proptest::prelude::*;
 
-    fn arb_perm() -> impl Strategy<Value = Vec<usize>> {
+    fn arb_perm() -> impl Strategy<Value = Vec<u8>> {
         let mut v = vec![];
         for i in 0..54 {
             v.push(i);
@@ -117,26 +117,26 @@ mod tests {
             assert_eq!(x_inv, y_inv);
         }
     }
-    fn to_mat(v: Vec<usize>) -> PermutationMatrix {
-        let mut perm = [0; 54];
+    fn to_mat(v: Vec<u8>) -> PermutationMatrix {
+        let mut perm = [0u8; 54];
         for i in 0..54 {
             perm[i] = v[i];
         }
         PermutationMatrix::op(Permutation::new(perm))
     }
-    fn to_na_mat(v: Vec<usize>) -> SMatrix<f64, 54, 54> {
+    fn to_na_mat(v: Vec<u8>) -> SMatrix<f64, 54, 54> {
         let mut mat: SMatrix<f64, 54, 54> = nalgebra::SMatrix::zeros();
         for i in 0..54 {
-            mat[(v[i], i)] = 1.;
+            mat[(v[i] as usize, i)] = 1.;
         }
         mat
     }
     fn into_mat(m: SMatrix<f64, 54, 54>) -> PermutationMatrix {
-        let mut perm = [0; 54];
+        let mut perm = [0u8; 54];
         for j in 0..54 {
             for i in 0..54 {
                 if m[(i, j)] == 1. {
-                    perm[j] = i;
+                    perm[j] = i as u8;
                 }
             }
         }

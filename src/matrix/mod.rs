@@ -13,12 +13,12 @@ pub use math::{Permutation, PermutationMatrix};
 /// Check if the colors on the given `positions` are the same.
 pub(crate) fn same_color_check<const N: usize>(
     mat: &PermutationMatrix,
-    positions: [usize; N],
+    positions: [u8; N],
 ) -> bool {
     let inv = &mat.inv_perm;
     let mut color_list = [Surface::B; N];
     for i in 0..N {
-        let pos = inv[positions[i]];
+        let pos = inv[positions[i] as usize];
         let (c, _, _) = surface_number_inv(pos);
         color_list[i] = c;
     }
@@ -56,7 +56,7 @@ fn test_same_color_check() {
         m = of(Command(Move::x, 1)) * m;
     }
 }
-struct Arrow(pub usize, pub usize);
+struct Arrow(pub u8, pub u8);
 fn surface_permutator(mov: Surface) -> Vec<Arrow> {
     vec![
         Arrow(surface_number(mov, 0, 0), surface_number(mov, 0, 2)),
@@ -69,7 +69,7 @@ fn surface_permutator(mov: Surface) -> Vec<Arrow> {
         Arrow(surface_number(mov, 2, 2), surface_number(mov, 2, 0)),
     ]
 }
-fn edge_permutator(edges: [(Surface, [(usize, usize); 3]); 4]) -> Vec<Arrow> {
+fn edge_permutator(edges: [(Surface, [(u8, u8); 3]); 4]) -> Vec<Arrow> {
     let mut v = vec![];
     for k in 0..4 {
         let (surface_x, edges_x) = edges[k];
@@ -84,12 +84,12 @@ fn edge_permutator(edges: [(Surface, [(usize, usize); 3]); 4]) -> Vec<Arrow> {
     v
 }
 fn from_arrows(arrows: Vec<Arrow>) -> PermutationMatrix {
-    let mut perm = [0; 54];
+    let mut perm = [0u8; 54];
     for j in 0..54 {
-        perm[j] = j;
+        perm[j] = j as u8;
     }
     for Arrow(from, to) in arrows {
-        perm[from] = to;
+        perm[from as usize] = to;
     }
     PermutationMatrix::op(Permutation::new(perm))
 }

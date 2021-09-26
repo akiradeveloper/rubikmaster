@@ -4,16 +4,16 @@ use crate::matrix;
 use crate::matrix::{same_color_check, PermutationMatrix};
 use crate::{Command, Move};
 
-const R: [usize; 9] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-const L: [usize; 9] = [9, 10, 11, 12, 13, 14, 15, 16, 17];
-const U: [usize; 9] = [18, 19, 20, 21, 22, 23, 24, 25, 26];
-const D: [usize; 9] = [27, 28, 29, 30, 31, 32, 33, 34, 35];
-const F: [usize; 9] = [36, 37, 38, 39, 40, 41, 42, 43, 44];
-const B: [usize; 9] = [45, 46, 47, 48, 49, 50, 51, 52, 53];
-const R2: [usize; 6] = [0, 1, 3, 4, 6, 7];
-const L2: [usize; 6] = [12, 13, 14, 15, 16, 17];
-const F2: [usize; 6] = [39, 40, 41, 42, 43, 44];
-const B2: [usize; 6] = [45, 46, 48, 49, 51, 52];
+const R: [u8; 9] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+const L: [u8; 9] = [9, 10, 11, 12, 13, 14, 15, 16, 17];
+const U: [u8; 9] = [18, 19, 20, 21, 22, 23, 24, 25, 26];
+const D: [u8; 9] = [27, 28, 29, 30, 31, 32, 33, 34, 35];
+const F: [u8; 9] = [36, 37, 38, 39, 40, 41, 42, 43, 44];
+const B: [u8; 9] = [45, 46, 47, 48, 49, 50, 51, 52, 53];
+const R2: [u8; 6] = [0, 1, 3, 4, 6, 7];
+const L2: [u8; 6] = [12, 13, 14, 15, 16, 17];
+const F2: [u8; 6] = [39, 40, 41, 42, 43, 44];
+const B2: [u8; 6] = [45, 46, 48, 49, 51, 52];
 
 /// Check if the cube is solved.
 pub fn solved(mat: &PermutationMatrix) -> bool {
