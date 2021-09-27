@@ -1,4 +1,5 @@
 pub mod cfop;
+pub mod component;
 pub mod coord;
 pub mod matrix;
 pub mod parser;
@@ -7,16 +8,16 @@ pub mod parser;
 pub enum Move {
     R,
     L,
-    U,
-    D,
     F,
     B,
+    U,
+    D,
     r,
     l,
-    u,
-    d,
     f,
     b,
+    u,
+    d,
     M,
     E,
     S,
@@ -100,24 +101,6 @@ fn test_flatten() {
     assert_eq!(f, vec![Command(Move::R, -1), Command(Move::U, -1)]);
 }
 
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
-pub enum Surface {
-    R,
-    L,
-    U,
-    D,
-    F,
-    B,
-}
-pub const SURFACE_LIST: [Surface; 6] = [
-    Surface::R,
-    Surface::L,
-    Surface::U,
-    Surface::D,
-    Surface::F,
-    Surface::B,
-];
-
 /// Generate a scramble sequence.
 pub fn random(n: usize) -> Vec<Command> {
     use rand::prelude::*;
@@ -126,8 +109,9 @@ pub fn random(n: usize) -> Vec<Command> {
     for _ in 0..n {
         let mov: usize = rng.gen();
         let mov = MOVE_LIST[mov % 18];
-        let rep: usize = rng.gen();
-        let rep = rep % 3 + 1;
+        let ran: i64 = rng.gen();
+        let rep = ran % 2 + 1;
+        let rep = if ran % 2 == 0 { rep } else { -rep };
         v.push(Command(mov, rep as i8));
     }
     v
