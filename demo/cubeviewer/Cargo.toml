@@ -1,0 +1,10 @@
+[package]
+name = "cubeviewer"
+authors = ["Akira Hayakawa <ruby.wktk@gmail.com>"]
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+yew = "0.18"
+getrandom = { version = "0.2", features = ["js"] }
+rubikmaster = { path = "../../" }

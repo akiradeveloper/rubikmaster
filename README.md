@@ -5,6 +5,8 @@
 ![CI](https://github.com/akiradeveloper/rubikmaster/workflows/CI/badge.svg)
 [![Tokei](https://tokei.rs/b1/github/akiradeveloper/rubikmaster)](https://github.com/akiradeveloper/rubikmaster)
 
+https://user-images.githubusercontent.com/785824/136357797-47672e97-09f2-4558-b4e2-7cfda34db298.mov
+
 Do you like to solve Rubik's cube? I do.
 
 As a cuber and programmer, I want to build a
@@ -24,7 +26,7 @@ This library will include the following modules:
 
 - [x] Core: Matrix and Operations.
 - [x] Parser: The rotation notations like (RUR')U'(R'FR)F' should be interpreted.
-- [ ] Virtual Cube component (WebGL and wasm): Will support features like animated rotation, guide arrow, camera move. **HELP WANTED**
+- [x] Virtual Cube component (WebGL and wasm): Will support features like animated rotation, guide arrow, camera move. **HELP WANTED**
 
 I am open to any suggestions.
 

@@ -2,8 +2,9 @@
 //! and operations are matrix multiplications.
 
 use crate::coord::{self, surface_number, surface_number_inv};
+use crate::coord::{Surface, SurfaceIndex, SURFACE_LIST};
 use crate::Command;
-use crate::{Move, Surface, MOVE_LIST, SURFACE_LIST};
+use crate::{Move, MOVE_LIST};
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
@@ -19,7 +20,7 @@ pub(crate) fn same_color_check<const N: usize>(
     let mut color_list = [Surface::B; N];
     for i in 0..N {
         let pos = inv[positions[i] as usize];
-        let (c, _, _) = surface_number_inv(pos);
+        let SurfaceIndex(c, _, _) = surface_number_inv(pos);
         color_list[i] = c;
     }
     let mut b = true;
