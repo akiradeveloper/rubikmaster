@@ -1,7 +1,10 @@
 pub mod cfop;
+#[cfg(feature = "component")]
+#[cfg_attr(docsrs, doc(cfg(feature = "component")))]
 pub mod component;
 pub mod coord;
 pub mod matrix;
+
 pub mod parser;
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]

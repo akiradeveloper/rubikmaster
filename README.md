@@ -22,11 +22,13 @@ In this library, the state of the cube is expressed as
 54x54 permutation matrix which consumes only 54 bytes in memory and
 the multiplication costs only O(54) since the matrix is sparse.
 
-This library will include the following modules:
+## Features
 
-- [x] Core: Matrix and Operations.
-- [x] Parser: The rotation notations like (RUR')U'(R'FR)F' should be interpreted.
-- [x] Virtual Cube component (WebGL and wasm): Will support features like animated rotation, guide arrow, camera move. **HELP WANTED**
+This library includes the following modules
+
+- Core: The matrix representation of cube state and rotation.
+- Parser: Parser for rotation notes like RUR'U'.
+- Cube Component: Yew component to visualize a cube. Animation supported.
 
 I am open to any suggestions.
 
