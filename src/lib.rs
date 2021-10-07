@@ -1,3 +1,5 @@
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
 pub mod cfop;
 #[cfg(feature = "component")]
 #[cfg_attr(docsrs, doc(cfg(feature = "component")))]

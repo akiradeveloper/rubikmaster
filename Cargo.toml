@@ -1,6 +1,6 @@
 [package]
 name = "rubikmaster"
-version = "0.4.1"
+version = "0.4.2"
 authors = ["Akira Hayakawa <ruby.wktk@gmail.com>"]
 edition = "2018"
 license = "MIT"
