@@ -1,0 +1,50 @@
+name: Publish Demos
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+          profile: minimal
+
+
+      - uses: jetli/trunk-action@v0.1.0
+        with:
+          version: 'latest'
+          
+      - uses: jetli/wasm-bindgen-action@v0.1.0
+        with:
+          version: 'latest'
+
+      - name: Build demos
+        run: |
+          output="$(pwd)/dist"
+          mkdir "$output"
+          for path in demo/*; do
+            if [[ ! -d $path ]]; then
+              continue
+            fi
+            app_name=$(basename "$path")
+            echo "building: $app_name"
+            (
+              cd "$path"
+              dist_dir="$output/$app_name"
+              trunk build --release --dist "$dist_dir" --public-url="rubikmaster/$app_name"
+            )
+          done
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISH_DIR: ./dist
