@@ -5,7 +5,7 @@
 ![CI](https://github.com/akiradeveloper/rubikmaster/workflows/CI/badge.svg)
 [![Tokei](https://tokei.rs/b1/github/akiradeveloper/rubikmaster)](https://github.com/akiradeveloper/rubikmaster)
 
-https://user-images.githubusercontent.com/785824/136357797-47672e97-09f2-4558-b4e2-7cfda34db298.mov
+https://user-images.githubusercontent.com/785824/136539377-31b9fa00-2ad4-4048-9f3c-159b4d4b8114.mov
 
 Do you like to solve Rubik's cube? I do.
 
