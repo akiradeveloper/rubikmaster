@@ -265,7 +265,7 @@ impl Cube {
                 for z in -1..=1 {
                     let piece = Piece(x, y, z);
                     let piece_center = 2. * vec3(x as f32 * e, y as f32 * e, z as f32 * e);
-                    let cube = CubePiece::new(piece_center, edge);
+                    let cube = CubePiece::new(piece_center, 0.95 * edge);
                     let mut vertex_pos_list = vec![];
                     let mut vertex_color_list = vec![];
                     let mut index_list = vec![];
