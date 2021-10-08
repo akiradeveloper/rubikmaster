@@ -93,6 +93,8 @@ pub struct Cube {
     command_queue: VecDeque<Command>,
     cur_rotation: Option<RotationProgress>,
     next_state: PermutationMatrix,
+
+    blacklist: HashSet<u8>,
 }
 
 pub enum Msg {
@@ -104,6 +106,8 @@ pub struct Props {
     pub init_state: PermutationMatrix,
     #[prop_or_default]
     pub command_list: Vec<Command>,
+    #[prop_or_default]
+    pub blacklist: HashSet<u8>,
 }
 
 impl Component for Cube {
@@ -138,6 +142,8 @@ impl Component for Cube {
             command_queue,
             cur_rotation: None,
             next_state: props.init_state,
+
+            blacklist: props.blacklist,
         }
     }
 
@@ -285,7 +291,11 @@ impl Cube {
                             Some(SurfaceIndex(s, i, j)) => {
                                 let k = surface_number(s, i, j);
                                 let k = self.state.inv_perm[k as usize];
-                                self.color_list[k as usize]
+                                if self.blacklist.contains(&k) {
+                                    vec4(0., 0., 0., 0.6)
+                                } else {
+                                    self.color_list[k as usize]
+                                }
                             }
                         };
                         for _ in 0..4 {

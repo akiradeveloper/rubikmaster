@@ -1,0 +1,11 @@
+[package]
+name = "f2l"
+authors = ["Akira Hayakawa <ruby.wktk@gmail.com>"]
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+yew = "0.18"
+rand = "0.8"
+getrandom = { version = "0.2", features = ["js"] }
+rubikmaster = { path = "../../", features = ["component"] }

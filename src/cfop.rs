@@ -144,6 +144,8 @@ fn test_f2l_solved_4times() {
     }
 }
 
+pub const F2L_LIST: [&str; 3] = ["RUR'", "U'RUR'URUR'", "yUL'U2LU'yLUL'"];
+
 pub const PLL_LIST: [(&str, &str); 21] = [
     ("Ub", "(R2'U)(RUR')(U'R'U')(R'UR')"),
     ("Ua", "(RU'R)(URUR)(U'R'U'R2')"),

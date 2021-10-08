@@ -31,7 +31,8 @@ nalgebra = "0.29"
 
 [workspace]
 members = [
-    "demo/cubeviewer"
+    "demo/cubeviewer",
+    "demo/f2l",
 ]
 
 [dependencies.web-sys]
