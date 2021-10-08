@@ -2,6 +2,7 @@
 
 use wasm_bindgen::JsCast;
 use web_sys::HtmlCanvasElement;
+use web_sys::HtmlDivElement;
 use web_sys::WebGl2RenderingContext as GL;
 use web_sys::WebGlProgram;
 use yew::services::{RenderService, Task};
@@ -86,8 +87,11 @@ pub struct Cube {
     gl: Option<GL>,
     shader_program: Option<WebGlProgram>,
     link: ComponentLink<Self>,
-    node_ref: NodeRef,
+    canvas_node_ref: NodeRef,
+    fps_node_ref: NodeRef,
     render_loop: Option<Box<dyn Task>>,
+
+    prev_timestamp: Option<f64>,
 
     state: PermutationMatrix,
     color_list: [Vec4; 54],
@@ -157,10 +161,13 @@ impl Component for Cube {
             shader_program: None,
 
             link,
-            node_ref: NodeRef::default(),
+            canvas_node_ref: NodeRef::default(),
+            fps_node_ref: NodeRef::default(),
             render_loop: None,
             state: props.init_state,
             color_list,
+
+            prev_timestamp: None,
 
             command_queue,
             cur_rotation: None,
@@ -174,7 +181,7 @@ impl Component for Cube {
 
     fn rendered(&mut self, first_render: bool) {
         if first_render {
-            let canvas = self.node_ref.cast::<HtmlCanvasElement>().unwrap();
+            let canvas = self.canvas_node_ref.cast::<HtmlCanvasElement>().unwrap();
             canvas.set_height(300);
             canvas.set_width(300);
 
@@ -255,7 +262,10 @@ impl Component for Cube {
 
     fn view(&self) -> Html {
         html! {
-            <canvas ref={self.node_ref.clone()} />
+            <div>
+                <canvas ref={self.canvas_node_ref.clone()} />
+                <div ref={self.fps_node_ref.clone()} style="position: absolute; left: 20px; top: 20px; color: white;">{ "FPS: unknown" }</div>
+            </div>
         }
     }
 
@@ -268,6 +278,14 @@ impl Cube {
     fn render_gl(&mut self, timestamp: f64) {
         let gl = self.gl.as_ref().expect("GL Context not initialized!");
         let shader_program = self.shader_program.as_ref().unwrap();
+
+        if let Some(prev) = self.prev_timestamp {
+            let elapsed = timestamp - prev;
+            let fps_val = 1000.0 / elapsed;
+            let fps_node = self.fps_node_ref.cast::<HtmlDivElement>().unwrap();
+            fps_node.set_inner_text(&format!("FPS: {:.2}", fps_val));
+        }
+        self.prev_timestamp = Some(timestamp);
 
         let should_dequeue = match &self.cur_rotation {
             Some(x) => x.cur_angle(timestamp).abs() >= x.complete_angle.abs(),

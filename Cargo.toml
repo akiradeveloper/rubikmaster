@@ -39,6 +39,7 @@ members = [
 version = "0.3"
 features = [
   'HtmlCanvasElement',
+  'HtmlDivElement',
   'WebGlBuffer',
   'WebGlProgram',
   'WebGl2RenderingContext',
