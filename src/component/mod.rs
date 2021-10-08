@@ -80,7 +80,7 @@ impl RotationProgress {
         direction * 1.57 * elapsed / TIMEMS_90DEGREE
     }
 }
-
+use std::collections::HashMap;
 pub struct Cube {
     canvas: Option<HtmlCanvasElement>,
     gl: Option<GL>,
@@ -97,6 +97,8 @@ pub struct Cube {
     next_state: PermutationMatrix,
 
     blacklist: HashSet<u8>,
+
+    cache: HashMap<Piece, PieceData>,
 }
 
 pub enum Msg {
@@ -110,6 +112,13 @@ pub struct Props {
     pub command_list: Vec<Command>,
     #[prop_or_default]
     pub blacklist: HashSet<u8>,
+}
+
+#[derive(Default)]
+struct PieceData {
+    vertex_pos_list: Vec<f32>,
+    vertex_color_list: Vec<f32>,
+    index_list: Vec<u16>,
 }
 
 impl Component for Cube {
@@ -132,6 +141,16 @@ impl Component for Cube {
             command_queue.push_back(x);
         }
 
+        let mut cache = HashMap::new();
+        for x in -1..=1 {
+            for y in -1..=1 {
+                for z in -1..=1 {
+                    let piece = Piece(x, y, z);
+                    cache.insert(piece, PieceData::default());
+                }
+            }
+        }
+
         Cube {
             canvas: None,
             gl: None,
@@ -148,6 +167,8 @@ impl Component for Cube {
             next_state: props.init_state,
 
             blacklist: props.blacklist,
+
+            cache,
         }
     }
 
@@ -184,6 +205,38 @@ impl Component for Cube {
             self.canvas = Some(canvas);
             self.gl = Some(gl);
             self.shader_program = Some(shader_program);
+
+            // The geometry won't change.
+            let edge = 2.;
+            let e = 0.5 * edge;
+            for x in -1..=1 {
+                for y in -1..=1 {
+                    for z in -1..=1 {
+                        let piece = Piece(x, y, z);
+                        let piece_center = 2. * vec3(x as f32 * e, y as f32 * e, z as f32 * e);
+                        let cube = CubePiece::new(piece_center, 0.95 * edge);
+                        let mut vertex_pos_list = vec![];
+                        let mut index_list = vec![];
+                        let mut offset: u16 = 0;
+                        for surface in SURFACE_LIST {
+                            let indices = SURFACE_INDICES[surface as usize];
+                            for i in indices {
+                                let v = cube.vertices[i as usize];
+                                vertex_pos_list.push(v[0]);
+                                vertex_pos_list.push(v[1]);
+                                vertex_pos_list.push(v[2]);
+                            }
+
+                            for i in [0, 1, 2, 0, 2, 3] {
+                                index_list.push(offset + i);
+                            }
+                            offset += 4;
+                        }
+                        self.cache.get_mut(&piece).unwrap().vertex_pos_list = vertex_pos_list;
+                        self.cache.get_mut(&piece).unwrap().index_list = index_list;
+                    }
+                }
+            }
 
             let render_frame = self.link.callback(Msg::Render);
             let handle = RenderService::request_animation_frame(render_frame);
@@ -242,7 +295,41 @@ impl Cube {
                 self.cur_rotation = Some(new_rot);
                 self.next_state = matrix::of(head) * self.state;
             }
+
+            // colors should be updated for every move.
+            for x in -1..=1 {
+                for y in -1..=1 {
+                    for z in -1..=1 {
+                        let piece = Piece(x, y, z);
+                        let mut vertex_color_list = vec![];
+                        for surface in coord::SURFACE_LIST {
+                            let sur = surface_index_of(piece, surface);
+                            let color = match sur {
+                                None => vec4(0., 0., 0., 1.),
+                                Some(SurfaceIndex(s, i, j)) => {
+                                    let k = surface_number(s, i, j);
+                                    let k = self.state.inv_perm[k as usize];
+                                    if self.blacklist.contains(&k) {
+                                        vec4(0., 0., 0., 0.6)
+                                    } else {
+                                        self.color_list[k as usize]
+                                    }
+                                }
+                            };
+                            for _ in 0..4 {
+                                vertex_color_list.push(color[0]);
+                                vertex_color_list.push(color[1]);
+                                vertex_color_list.push(color[2]);
+                                vertex_color_list.push(color[3]);
+                            }
+                        }
+                        self.cache.get_mut(&piece).unwrap().vertex_color_list = vertex_color_list;
+                    }
+                }
+            }
         }
+
+        // The code below will be executed for every frame.
 
         gl.clear_color(0., 0., 0., 1.);
         gl.clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT);
@@ -270,52 +357,15 @@ impl Cube {
             m_projection.as_slice(),
         );
 
-        let edge = 2.;
-        let e = 0.5 * edge;
         for x in -1..=1 {
             for y in -1..=1 {
                 for z in -1..=1 {
                     let piece = Piece(x, y, z);
-                    let piece_center = 2. * vec3(x as f32 * e, y as f32 * e, z as f32 * e);
-                    let cube = CubePiece::new(piece_center, 0.95 * edge);
-                    let mut vertex_pos_list = vec![];
-                    let mut vertex_color_list = vec![];
-                    let mut index_list = vec![];
-                    let mut offset: u16 = 0;
-                    for surface in SURFACE_LIST {
-                        let indices = SURFACE_INDICES[surface as usize];
-                        for i in indices {
-                            let v = cube.vertices[i as usize];
-                            vertex_pos_list.push(v[0]);
-                            vertex_pos_list.push(v[1]);
-                            vertex_pos_list.push(v[2]);
-                        }
 
-                        let sur = surface_index_of(piece, surface);
-                        let color = match sur {
-                            None => vec4(0., 0., 0., 1.),
-                            Some(SurfaceIndex(s, i, j)) => {
-                                let k = surface_number(s, i, j);
-                                let k = self.state.inv_perm[k as usize];
-                                if self.blacklist.contains(&k) {
-                                    vec4(0., 0., 0., 0.6)
-                                } else {
-                                    self.color_list[k as usize]
-                                }
-                            }
-                        };
-                        for _ in 0..4 {
-                            vertex_color_list.push(color[0]);
-                            vertex_color_list.push(color[1]);
-                            vertex_color_list.push(color[2]);
-                            vertex_color_list.push(color[3]);
-                        }
-
-                        for i in [0, 1, 2, 0, 2, 3] {
-                            index_list.push(offset + i);
-                        }
-                        offset += 4;
-                    }
+                    let piece_data = &self.cache.get(&piece).unwrap();
+                    let vertex_pos_list = &piece_data.vertex_pos_list;
+                    let vertex_color_list = &piece_data.vertex_color_list;
+                    let index_list = &piece_data.index_list;
 
                     let identity = nalgebra_glm::Mat4::identity();
                     let m_rotation = if let Some(cur_rot) = &self.cur_rotation {
