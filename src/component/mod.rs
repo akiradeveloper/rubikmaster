@@ -349,7 +349,7 @@ impl Cube {
 
         // The code below will be executed for every frame.
 
-        gl.clear_color(0., 0., 0., 1.);
+        gl.clear_color(0., 0., 0., 0.2);
         gl.clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT);
         gl.enable(GL::DEPTH_TEST);
 
