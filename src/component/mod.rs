@@ -3,6 +3,7 @@
 use wasm_bindgen::JsCast;
 use web_sys::HtmlCanvasElement;
 use web_sys::WebGl2RenderingContext as GL;
+use web_sys::WebGlProgram;
 use yew::services::{RenderService, Task};
 use yew::{html, Component, ComponentLink, Html, NodeRef, ShouldRender};
 
@@ -83,6 +84,7 @@ impl RotationProgress {
 pub struct Cube {
     canvas: Option<HtmlCanvasElement>,
     gl: Option<GL>,
+    shader_program: Option<WebGlProgram>,
     link: ComponentLink<Self>,
     node_ref: NodeRef,
     render_loop: Option<Box<dyn Task>>,
@@ -133,6 +135,8 @@ impl Component for Cube {
         Cube {
             canvas: None,
             gl: None,
+            shader_program: None,
+
             link,
             node_ref: NodeRef::default(),
             render_loop: None,
@@ -160,8 +164,26 @@ impl Component for Cube {
                 .dyn_into()
                 .unwrap();
 
+            let vert_code = include_str!("./cube.vert");
+            let vert_shader = gl.create_shader(GL::VERTEX_SHADER).unwrap();
+            gl.shader_source(&vert_shader, &vert_code);
+            gl.compile_shader(&vert_shader);
+
+            let frag_code = include_str!("./cube.frag");
+            let frag_shader = gl.create_shader(GL::FRAGMENT_SHADER).unwrap();
+            gl.shader_source(&frag_shader, &frag_code);
+            gl.compile_shader(&frag_shader);
+
+            let shader_program = gl.create_program().unwrap();
+            gl.attach_shader(&shader_program, &vert_shader);
+            gl.attach_shader(&shader_program, &frag_shader);
+            gl.link_program(&shader_program);
+
+            gl.use_program(Some(&shader_program));
+
             self.canvas = Some(canvas);
             self.gl = Some(gl);
+            self.shader_program = Some(shader_program);
 
             let render_frame = self.link.callback(Msg::Render);
             let handle = RenderService::request_animation_frame(render_frame);
@@ -192,6 +214,7 @@ impl Component for Cube {
 impl Cube {
     fn render_gl(&mut self, timestamp: f64) {
         let gl = self.gl.as_ref().expect("GL Context not initialized!");
+        let shader_program = self.shader_program.as_ref().unwrap();
 
         let should_dequeue = match &self.cur_rotation {
             Some(x) => x.cur_angle(timestamp).abs() >= x.complete_angle.abs(),
@@ -225,23 +248,6 @@ impl Cube {
         gl.clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT);
         gl.enable(GL::DEPTH_TEST);
 
-        let vert_code = include_str!("./cube.vert");
-        let vert_shader = gl.create_shader(GL::VERTEX_SHADER).unwrap();
-        gl.shader_source(&vert_shader, &vert_code);
-        gl.compile_shader(&vert_shader);
-
-        let frag_code = include_str!("./cube.frag");
-        let frag_shader = gl.create_shader(GL::FRAGMENT_SHADER).unwrap();
-        gl.shader_source(&frag_shader, &frag_code);
-        gl.compile_shader(&frag_shader);
-
-        let shader_program = gl.create_program().unwrap();
-        gl.attach_shader(&shader_program, &vert_shader);
-        gl.attach_shader(&shader_program, &frag_shader);
-        gl.link_program(&shader_program);
-
-        gl.use_program(Some(&shader_program));
-
         let canvas = self.canvas.as_ref().unwrap();
         let width = canvas.width();
         let height = canvas.height();
@@ -249,7 +255,7 @@ impl Cube {
 
         let eye = vec3(15., 15., 15.);
         let m_model_view = nalgebra_glm::look_at(&eye, &vec3(0., 0., 0.), &vec3(0., 1., 0.));
-        let u_model_view_ref = gl.get_uniform_location(&shader_program, "u_model_view");
+        let u_model_view_ref = gl.get_uniform_location(shader_program, "u_model_view");
         gl.uniform_matrix4fv_with_f32_array(
             u_model_view_ref.as_ref(),
             false,
@@ -257,7 +263,7 @@ impl Cube {
         );
 
         let m_projection = nalgebra_glm::perspective(width as f32 / height as f32, 0.5, 5., 30.);
-        let u_projection_ref = gl.get_uniform_location(&shader_program, "u_projection");
+        let u_projection_ref = gl.get_uniform_location(shader_program, "u_projection");
         gl.uniform_matrix4fv_with_f32_array(
             u_projection_ref.as_ref(),
             false,
@@ -335,7 +341,7 @@ impl Cube {
                     } else {
                         identity
                     };
-                    let u_rotation_ref = gl.get_uniform_location(&shader_program, "u_rotation");
+                    let u_rotation_ref = gl.get_uniform_location(shader_program, "u_rotation");
                     gl.uniform_matrix4fv_with_f32_array(
                         u_rotation_ref.as_ref(),
                         false,
@@ -347,7 +353,7 @@ impl Cube {
                     let tmp = js_sys::Float32Array::from(vertex_pos_list.as_slice());
                     gl.buffer_data_with_array_buffer_view(GL::ARRAY_BUFFER, &tmp, GL::STATIC_DRAW);
                     let v_in_position_ref =
-                        gl.get_attrib_location(&shader_program, "v_in_position") as u32;
+                        gl.get_attrib_location(shader_program, "v_in_position") as u32;
                     gl.vertex_attrib_pointer_with_i32(v_in_position_ref, 3, GL::FLOAT, false, 0, 0);
                     gl.enable_vertex_attrib_array(v_in_position_ref);
                     gl.bind_buffer(GL::ARRAY_BUFFER, None);
@@ -357,7 +363,7 @@ impl Cube {
                     let tmp = js_sys::Float32Array::from(vertex_color_list.as_slice());
                     gl.buffer_data_with_array_buffer_view(GL::ARRAY_BUFFER, &tmp, GL::STATIC_DRAW);
                     let v_in_color_ref =
-                        gl.get_attrib_location(&shader_program, "v_in_color") as u32;
+                        gl.get_attrib_location(shader_program, "v_in_color") as u32;
                     gl.vertex_attrib_pointer_with_i32(v_in_color_ref, 4, GL::FLOAT, false, 0, 0);
                     gl.enable_vertex_attrib_array(v_in_color_ref);
                     gl.bind_buffer(GL::ARRAY_BUFFER, None);
