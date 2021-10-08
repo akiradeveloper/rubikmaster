@@ -264,7 +264,7 @@ impl Component for Cube {
         html! {
             <div>
                 <canvas ref={self.canvas_node_ref.clone()} />
-                <div ref={self.fps_node_ref.clone()} style="position: absolute; left: 20px; top: 20px; color: white;">{ "FPS: unknown" }</div>
+                <div ref={self.fps_node_ref.clone()} style="position: absolute; left: 20px; top: 20px; color: white;">{ "" }</div>
             </div>
         }
     }
