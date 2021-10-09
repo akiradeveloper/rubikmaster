@@ -5,7 +5,7 @@ use web_sys::HtmlCanvasElement;
 use web_sys::HtmlDivElement;
 use web_sys::WebGl2RenderingContext as GL;
 use web_sys::WebGlProgram;
-use yew::services::{RenderService, Task};
+use yew::services::{ConsoleService, RenderService, Task};
 use yew::{html, Component, ComponentLink, Html, NodeRef, ShouldRender};
 
 use crate::coord::*;
@@ -82,6 +82,7 @@ impl RotationProgress {
     }
 }
 use std::collections::HashMap;
+use std::iter::FromIterator;
 pub struct Cube {
     canvas: Option<HtmlCanvasElement>,
     gl: Option<GL>,
@@ -164,18 +165,17 @@ impl Component for Cube {
             canvas_node_ref: NodeRef::default(),
             fps_node_ref: NodeRef::default(),
             render_loop: None,
-            state: props.init_state,
             color_list,
 
             prev_timestamp: None,
 
-            command_queue,
-            cur_rotation: None,
-            next_state: props.init_state,
-
-            blacklist: props.blacklist,
-
             cache,
+
+            cur_rotation: None,
+            state: props.init_state,
+            next_state: props.init_state,
+            command_queue,
+            blacklist: props.blacklist,
         }
     }
 
@@ -269,7 +269,17 @@ impl Component for Cube {
         }
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        self.state = props.init_state;
+        self.next_state = props.init_state;
+        self.blacklist = props.blacklist;
+        self.command_queue = VecDeque::from_iter(props.command_list);
+        self.cur_rotation = None;
+
+        let render_frame = self.link.callback(Msg::Render);
+        let handle = RenderService::request_animation_frame(render_frame);
+        self.render_loop = Some(Box::new(handle));
+
         false
     }
 }
