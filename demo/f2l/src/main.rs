@@ -113,7 +113,7 @@ impl Component for App {
     fn create(_: Self::Properties, link: yew::ComponentLink<Self>) -> Self {
         Self {
             link,
-            cur_problem: make_problem(11),
+            cur_problem: make_problem(0),
             diff_level: [3; 41],
         }
     }
