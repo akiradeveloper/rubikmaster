@@ -144,7 +144,56 @@ fn test_f2l_solved_4times() {
     }
 }
 
-pub const F2L_LIST: [&str; 3] = ["RUR'", "U'RUR'URUR'", "yUL'U2LU'yLUL'"];
+/// The list of F2L solutions. The problem numbers are from Tribox.
+pub const F2L_LIST: [&str; 41] = [
+    "URU'R'", // 1
+    "yU'L'UL", // 2
+    "yL'U'L", // 3
+    "yRUR'", // 4
+    "U'RUR'U2RU'R'", // 5
+    "yUL'U'LU2'L'UL", // 6
+    "U'RU2R'U2RU'R'", // 7
+    "yUL'U2LU2'L'UL", // 8
+    "yUL'U'LU'L'U'L", // 9
+    "U'RUR'URUR'", // 10
+    "U'RU2'R'Uy'R'U'R", // 11
+    "yUL'U2LU'yLUL'", // 12
+    "yUL'ULU'L'U'L",  // 13
+    "U'RU'RURUR'", // 14
+    "yL'ULU2yLUL'", // 15
+    "RU'R'U2y'R'U'R", // 16
+    "RU2'R'U'RUR'", // 17
+    "yL'U2LUL'U'L", // 18
+    "URU2'R'URU'R'", // 19
+    "yU'L'U2LU'L'UL", // 20
+    "U2RUR'URU'R'", // 21
+    "yL'ULU2'L'U'L",  // 22
+    "URU'RU'RU'R'URU'R'", // 23
+    "yU'L'ULUL'ULU'L'UL", // 24
+    "yU'L'ULUy'RU'R'", // 25
+    "URU'R'U'yL'UL", // 26
+    "RU'R'URU'R'", // 27
+    "yL'ULU'L'UL", // 28
+    "R'FRF'URU'R", // 29
+    "RUR'U'RUR'", // 30
+    "U'R'FRF'RU'R'", // 31
+    "RUR'U'RUR'U'RUR'", // 32
+    "U'RU'R'U2RU'R'", // 33
+    "yUL'ULU2'L'UL", // 34
+    "U'RUR'Uy'R'U'R", // 35
+    "yUL'U'LU'yLUL'", // 36
+    "RU2'R'URU2'R'Uy'R'U'R", // 37
+    "RU'R'U'RUR'U2RU'R'", // 38
+    "RU'R'URU2'R'URU'R'", // 39
+    "RU'R'U'RU'R'Uy'R'U'R", // 40
+    "yL'ULUL'ULU'yLUL'", // 41
+];
+#[test]
+fn test_f2l_parse() {
+    for seq in F2L_LIST {
+        assert!(crate::parser::parse(&seq).is_ok());
+    }
+}
 
 pub const PLL_LIST: [(&str, &str); 21] = [
     ("Ub", "(R2'U)(RUR')(U'R'U')(R'UR')"),
