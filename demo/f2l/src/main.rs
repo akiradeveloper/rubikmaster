@@ -5,14 +5,123 @@ use rand::Rng;
 use rubikmaster::component::*;
 use rubikmaster::coord;
 use rubikmaster::*;
+use std::collections::HashMap;
 use std::collections::HashSet;
 use yew::services::ConsoleService;
 use yew::*;
 
+use coord::Axis::*;
+const NO_ROT: [((coord::Axis, i8), (coord::Axis, i8)); 3] =
+    [((X, 1), (X, 1)), ((Y, 1), (Y, 1)), ((Z, 1), (Z, 1))];
+const Y_ROT: [((coord::Axis, i8), (coord::Axis, i8)); 3] =
+    [((X, 1), (Z, -1)), ((Y, 1), (Y, 1)), ((Z, 1), (X, 1))];
+
+#[derive(Clone, Debug)]
+struct SwitchFaceMatrix {
+    map: HashMap<(coord::Axis, i8), (coord::Axis, i8)>,
+}
+impl SwitchFaceMatrix {
+    fn new(tbl: [((coord::Axis, i8), (coord::Axis, i8)); 3]) -> Self {
+        let mut x = Self {
+            map: HashMap::new(),
+        };
+        for (a, b) in tbl {
+            x.register(a, b);
+        }
+        x
+    }
+    fn inv(self) -> Self {
+        let mut new_map = HashMap::new();
+        for (a, b) in self.map {
+            new_map.insert(b, a);
+        }
+        Self { map: new_map }
+    }
+    fn register(&mut self, a: (coord::Axis, i8), b: (coord::Axis, i8)) {
+        let a_rev = (a.0, -1 * a.1);
+        let b_rev = (b.0, -1 * b.1);
+        self.map.insert(a, b);
+        self.map.insert(a_rev, b_rev);
+    }
+    fn apply(self, other: Self) -> Self {
+        let mut new_map = HashMap::new();
+        for (a1, b1) in other.map {
+            dbg!(b1);
+            let b2 = *self.map.get(&b1).unwrap();
+            new_map.insert(a1, b2);
+        }
+        Self { map: new_map }
+    }
+    fn interpret(&self, axis: coord::Axis, clockwise: i8, indices: u8) -> (coord::Axis, i8, u8) {
+        let sign = if clockwise > 0 { 1 } else { -1 };
+        let r = *self.map.get(&(axis, sign)).unwrap();
+        let rev = sign * r.1;
+        let indices = if rev < 0 { rev3bits(indices) } else { indices };
+        (r.0, rev * clockwise, indices)
+    }
+}
+fn rev3bits(x: u8) -> u8 {
+    let mut ret = 0;
+    for i in 0..3 {
+        if x & (1 << i) > 0 {
+            ret |= 1 << (2 - i);
+        }
+    }
+    ret
+}
+#[test]
+fn switch_face_mat_mul() {
+    let id = SwitchFaceMatrix::new(NO_ROT);
+    let m1 = SwitchFaceMatrix::new(Y_ROT);
+    let m2 = m1.clone().inv();
+    let m3 = m2.clone() * m1.clone();
+    let m4 = m1 * id.clone();
+    let m5 = m2 * id;
+}
+#[test]
+fn test_rev3bits() {
+    assert_eq!(rev3bits(0b100), 0b001);
+    assert_eq!(rev3bits(0b110), 0b011);
+    assert_eq!(rev3bits(0b101), 0b101);
+}
+impl std::ops::Mul for SwitchFaceMatrix {
+    type Output = Self;
+    fn mul(self, rhs: Self) -> Self::Output {
+        self.apply(rhs)
+    }
+}
+fn y_interpret(seq: Vec<Command>) -> Vec<coord::Rotation> {
+    let mut ret = vec![];
+    let mut m = SwitchFaceMatrix::new(NO_ROT);
+    for x in seq {
+        match x {
+            Command(Move::y, 1) => {
+                let op = SwitchFaceMatrix::new(Y_ROT);
+                m = op * m;
+            }
+            Command(Move::y, -1) => {
+                let op = SwitchFaceMatrix::new(Y_ROT).inv();
+                m = op * m;
+            }
+            x => {
+                let rot = coord::rotation_of(x);
+                let (axis, clockwise, indices) = m.interpret(rot.axis, rot.clockwise, rot.indices);
+                let new_rot = coord::Rotation {
+                    axis,
+                    clockwise,
+                    indices,
+                };
+                ret.push(new_rot);
+            }
+        }
+    }
+    ret
+}
+
 struct Problem {
     no: usize,
     state: PermutationMatrix,
-    solve: Vec<Command>,
+    solve: Vec<coord::Rotation>,
     solve_seq: String,
     ok: bool,
 }
@@ -30,6 +139,7 @@ fn apply_prime(m: PermutationMatrix, seq: &str) -> (PermutationMatrix, Vec<Comma
 }
 
 fn make_problem(i: usize) -> Problem {
+    ConsoleService::info(&format!("next=No.{}", i + 1));
     let mut rng = rand::thread_rng();
     let mut init_state = matrix::PermutationMatrix::identity();
 
@@ -50,7 +160,7 @@ fn make_problem(i: usize) -> Problem {
     Problem {
         no: i,
         state: init_state,
-        solve,
+        solve: y_interpret(solve),
         solve_seq: f2l.to_owned(),
         ok: true,
     }
@@ -113,7 +223,7 @@ impl Component for App {
     fn create(_: Self::Properties, link: yew::ComponentLink<Self>) -> Self {
         Self {
             link,
-            cur_problem: make_problem(0),
+            cur_problem: make_problem(28),
             diff_level: [3; 41],
         }
     }
