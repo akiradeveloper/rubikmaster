@@ -50,9 +50,9 @@ const SURFACE_INDICES: [[u8; 4]; 6] = [
 fn make_color_list(colors: [Vec4; 6]) -> [Vec4; 54] {
     let mut out = [Vec4::default(); 54];
     for surface in SURFACE_LIST {
-        for x in -1..=1 {
-            for y in -1..=1 {
-                for z in -1..=1 {
+        for x in 0..3 {
+            for y in 0..3 {
+                for z in 0..3 {
                     let p = Piece(x, y, z);
                     if let Some(SurfaceIndex(s, i, j)) = surface_index_of(p, surface) {
                         let b = surface_number(s, i, j);
@@ -147,9 +147,9 @@ impl Component for Cube {
         }
 
         let mut cache = HashMap::new();
-        for x in -1..=1 {
-            for y in -1..=1 {
-                for z in -1..=1 {
+        for x in 0..3 {
+            for y in 0..3 {
+                for z in 0..3 {
                     let piece = Piece(x, y, z);
                     cache.insert(piece, PieceData::default());
                 }
@@ -216,11 +216,11 @@ impl Component for Cube {
             // The geometry won't change.
             let edge = 2.;
             let e = 0.5 * edge;
-            for x in -1..=1 {
-                for y in -1..=1 {
-                    for z in -1..=1 {
-                        let piece = Piece(x, y, z);
-                        let piece_center = 2. * vec3(x as f32 * e, y as f32 * e, z as f32 * e);
+            for x in 0..3 {
+                for y in 0..3 {
+                    for z in 0..3 {
+                        let piece = Piece(x as u8, y as u8, z as u8);
+                        let piece_center = 2. * vec3((x-1) as f32 * e, (y-1) as f32 * e, (z-1) as f32 * e);
                         let cube = CubePiece::new(piece_center, 0.95 * edge);
                         let mut vertex_pos_list = vec![];
                         let mut index_list = vec![];
@@ -309,7 +309,7 @@ impl Cube {
                 let mut pieces = HashSet::new();
                 for i in 0..3 {
                     if rot.indices & (1 << i) > 0 {
-                        let plane = coord::RotationPlane(rot.axis, i - 1);
+                        let plane = coord::RotationPlane(rot.axis, i);
                         for x in coord::piece_group_of(plane) {
                             pieces.insert(*x);
                         }
@@ -327,9 +327,9 @@ impl Cube {
             }
 
             // colors should be updated for every move.
-            for x in -1..=1 {
-                for y in -1..=1 {
-                    for z in -1..=1 {
+            for x in 0..3 {
+                for y in 0..3 {
+                    for z in 0..3 {
                         let piece = Piece(x, y, z);
                         let mut vertex_color_list = vec![];
                         for surface in coord::SURFACE_LIST {
@@ -387,9 +387,9 @@ impl Cube {
             m_projection.as_slice(),
         );
 
-        for x in -1..=1 {
-            for y in -1..=1 {
-                for z in -1..=1 {
+        for x in 0..3 {
+            for y in 0..3 {
+                for z in 0..3 {
                     let piece = Piece(x, y, z);
 
                     let piece_data = &self.cache.get(&piece).unwrap();
