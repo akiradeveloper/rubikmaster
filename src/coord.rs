@@ -53,7 +53,7 @@ pub struct Piece(
     /// y
     pub u8,
     /// z
-    pub u8
+    pub u8,
 );
 
 /// Get the surface index of a surface of a piece.
@@ -180,7 +180,7 @@ pub struct RotationPlane(
     /// The rotation axis. x,y,z
     pub Axis,
     /// The plane index. 0,1,2
-    pub u8
+    pub u8,
 );
 
 use std::collections::HashMap;

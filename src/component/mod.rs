@@ -220,7 +220,8 @@ impl Component for Cube {
                 for y in 0..3 {
                     for z in 0..3 {
                         let piece = Piece(x as u8, y as u8, z as u8);
-                        let piece_center = 2. * vec3((x-1) as f32 * e, (y-1) as f32 * e, (z-1) as f32 * e);
+                        let piece_center =
+                            2. * vec3((x - 1) as f32 * e, (y - 1) as f32 * e, (z - 1) as f32 * e);
                         let cube = CubePiece::new(piece_center, 0.95 * edge);
                         let mut vertex_pos_list = vec![];
                         let mut index_list = vec![];
