@@ -23,7 +23,7 @@ fn apply_prime(m: PermutationMatrix, seq: &str) -> (PermutationMatrix, Vec<Comma
     let pll = flatten(pll.1);
     let pll_prime = flatten(vec![Elem::Group(pll.clone(), -1)]);
     for x in pll_prime {
-        let op = matrix::of(x);
+        let op = matrix::of(coord::rotation_of(x));
         m = op * m;
     }
     (m, pll)

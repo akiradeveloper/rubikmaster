@@ -29,11 +29,15 @@ pub(crate) fn same_color_check<const N: usize>(
     }
     b
 }
+fn matof(c: Command) -> PermutationMatrix {
+    let rot = crate::coord::rotation_of(c);
+    of(rot)
+}
 #[test]
 fn test_same_color_check() {
     use Surface::*;
     let mut m = PermutationMatrix::identity();
-    let c = of(Command(Move::R, 1));
+    let c = matof(Command(Move::R, 1));
     m = c * m;
 
     for _ in 0..1000 {
@@ -54,7 +58,7 @@ fn test_same_color_check() {
             list[k] = coord::surface_number(sur, i, j);
         }
         assert!(same_color_check(&m, list));
-        m = of(Command(Move::x, 1)) * m;
+        m = matof(Command(Move::x, 1)) * m;
     }
 }
 struct Arrow(pub u8, pub u8);
@@ -100,7 +104,7 @@ fn concat(mut x: Vec<Arrow>, mut y: Vec<Arrow>) -> Vec<Arrow> {
 }
 use std::collections::HashMap;
 struct Cache {
-    memo: HashMap<(Move, i8), PermutationMatrix>,
+    memo: HashMap<coord::Rotation, PermutationMatrix>,
 }
 impl Cache {
     fn new() -> Self {
@@ -108,53 +112,19 @@ impl Cache {
             memo: HashMap::new(),
         }
     }
-    fn get(&mut self, mov: Move, rep: i8) -> PermutationMatrix {
+    fn get(&mut self, rot: coord::Rotation) -> PermutationMatrix {
+        use coord::{Axis::*, Rotation};
         use Surface::*;
-        if let Some(v) = self.memo.get(&(mov, rep)) {
+        if let Some(v) = self.memo.get(&rot) {
             return *v;
         }
-        let v = match (mov, rep) {
-            (Move::U, 1) => {
-                let s = surface_permutator(U);
-                let e = edge_permutator([
-                    (F, [(0, 0), (0, 1), (0, 2)]),
-                    (L, [(0, 0), (0, 1), (0, 2)]),
-                    (B, [(0, 2), (1, 2), (2, 2)]),
-                    (R, [(0, 2), (1, 2), (2, 2)]),
-                ]);
-                from_arrows(concat(s, e))
-            }
-            (Move::D, 1) => {
-                let s = surface_permutator(D);
-                let e = edge_permutator([
-                    (F, [(2, 2), (2, 1), (2, 0)]),
-                    (R, [(2, 0), (1, 0), (0, 0)]),
-                    (B, [(2, 0), (1, 0), (0, 0)]),
-                    (L, [(2, 2), (2, 1), (2, 0)]),
-                ]);
-                from_arrows(concat(s, e))
-            }
-            (Move::F, 1) => {
-                let s = surface_permutator(F);
-                let e = edge_permutator([
-                    (U, [(0, 2), (1, 2), (2, 2)]),
-                    (R, [(0, 0), (0, 1), (0, 2)]),
-                    (D, [(0, 0), (0, 1), (0, 2)]),
-                    (L, [(0, 2), (1, 2), (2, 2)]),
-                ]);
-                from_arrows(concat(s, e))
-            }
-            (Move::B, 1) => {
-                let s = surface_permutator(B);
-                let e = edge_permutator([
-                    (U, [(2, 0), (1, 0), (0, 0)]),
-                    (L, [(2, 0), (1, 0), (0, 0)]),
-                    (D, [(2, 2), (2, 1), (2, 0)]),
-                    (R, [(2, 2), (2, 1), (2, 0)]),
-                ]);
-                from_arrows(concat(s, e))
-            }
-            (Move::R, 1) => {
+        let v = match rot {
+            // R
+            Rotation {
+                axis: X,
+                indices: 0b100,
+                clockwise: 1,
+            } => {
                 let s = surface_permutator(R);
                 let e = edge_permutator([
                     (F, [(0, 2), (1, 2), (2, 2)]),
@@ -164,7 +134,12 @@ impl Cache {
                 ]);
                 from_arrows(concat(s, e))
             }
-            (Move::L, 1) => {
+            // L
+            Rotation {
+                axis: X,
+                indices: 0b001,
+                clockwise: -1,
+            } => {
                 let s = surface_permutator(L);
                 let e = edge_permutator([
                     (U, [(2, 2), (2, 1), (2, 0)]),
@@ -174,25 +149,72 @@ impl Cache {
                 ]);
                 from_arrows(concat(s, e))
             }
-            (Move::E, 1) => {
+            // U
+            Rotation {
+                axis: Y,
+                indices: 0b100,
+                clockwise: 1,
+            } => {
+                let s = surface_permutator(U);
                 let e = edge_permutator([
-                    (F, [(1, 2), (1, 1), (1, 0)]),
-                    (R, [(2, 1), (1, 1), (0, 1)]),
-                    (B, [(2, 1), (1, 1), (0, 1)]),
-                    (L, [(1, 2), (1, 1), (1, 0)]),
+                    (F, [(0, 0), (0, 1), (0, 2)]),
+                    (L, [(0, 0), (0, 1), (0, 2)]),
+                    (B, [(0, 2), (1, 2), (2, 2)]),
+                    (R, [(0, 2), (1, 2), (2, 2)]),
                 ]);
-                from_arrows(e)
+                from_arrows(concat(s, e))
             }
-            (Move::S, 1) => {
+            // D
+            Rotation {
+                axis: Y,
+                indices: 0b001,
+                clockwise: -1,
+            } => {
+                let s = surface_permutator(D);
                 let e = edge_permutator([
-                    (R, [(1, 0), (1, 1), (1, 2)]),
-                    (D, [(1, 0), (1, 1), (1, 2)]),
-                    (L, [(0, 1), (1, 1), (2, 1)]),
-                    (U, [(0, 1), (1, 1), (2, 1)]),
+                    (F, [(2, 2), (2, 1), (2, 0)]),
+                    (R, [(2, 0), (1, 0), (0, 0)]),
+                    (B, [(2, 0), (1, 0), (0, 0)]),
+                    (L, [(2, 2), (2, 1), (2, 0)]),
                 ]);
-                from_arrows(e)
+                from_arrows(concat(s, e))
             }
-            (Move::M, 1) => {
+            // F
+            Rotation {
+                axis: Z,
+                indices: 0b100,
+                clockwise: 1,
+            } => {
+                let s = surface_permutator(F);
+                let e = edge_permutator([
+                    (U, [(0, 2), (1, 2), (2, 2)]),
+                    (R, [(0, 0), (0, 1), (0, 2)]),
+                    (D, [(0, 0), (0, 1), (0, 2)]),
+                    (L, [(0, 2), (1, 2), (2, 2)]),
+                ]);
+                from_arrows(concat(s, e))
+            }
+            // B
+            Rotation {
+                axis: Z,
+                indices: 0b001,
+                clockwise: -1,
+            } => {
+                let s = surface_permutator(B);
+                let e = edge_permutator([
+                    (U, [(2, 0), (1, 0), (0, 0)]),
+                    (L, [(2, 0), (1, 0), (0, 0)]),
+                    (D, [(2, 2), (2, 1), (2, 0)]),
+                    (R, [(2, 2), (2, 1), (2, 0)]),
+                ]);
+                from_arrows(concat(s, e))
+            }
+            // M
+            Rotation {
+                axis: X,
+                indices: 0b010,
+                clockwise: -1,
+            } => {
                 let e = edge_permutator([
                     (U, [(1, 2), (1, 1), (1, 0)]),
                     (F, [(2, 1), (1, 1), (0, 1)]),
@@ -201,24 +223,81 @@ impl Cache {
                 ]);
                 from_arrows(e)
             }
-            (Move::u, 1) => self.get(Move::U, 1) * self.get(Move::E, -1),
-            (Move::d, 1) => self.get(Move::D, 1) * self.get(Move::E, 1),
-            (Move::f, 1) => self.get(Move::F, 1) * self.get(Move::S, 1),
-            (Move::b, 1) => self.get(Move::B, 1) * self.get(Move::S, -1),
-            (Move::r, 1) => self.get(Move::R, 1) * self.get(Move::M, -1),
-            (Move::l, 1) => self.get(Move::L, 1) * self.get(Move::M, 1),
-            (Move::x, 1) => self.get(Move::r, 1) * self.get(Move::L, -1),
-            (Move::y, 1) => self.get(Move::u, 1) * self.get(Move::D, -1),
-            (Move::z, 1) => self.get(Move::f, 1) * self.get(Move::B, -1),
-            (mov, rep) => {
-                let mut mat = PermutationMatrix::identity();
-                for _ in 0..(rep + 4) {
-                    mat = self.get(mov, 1) * mat;
+            // E
+            Rotation {
+                axis: Y,
+                indices: 0b010,
+                clockwise: -1,
+            } => {
+                let e = edge_permutator([
+                    (F, [(1, 2), (1, 1), (1, 0)]),
+                    (R, [(2, 1), (1, 1), (0, 1)]),
+                    (B, [(2, 1), (1, 1), (0, 1)]),
+                    (L, [(1, 2), (1, 1), (1, 0)]),
+                ]);
+                from_arrows(e)
+            }
+            // S
+            Rotation {
+                axis: Z,
+                indices: 0b010,
+                clockwise: 1,
+            } => {
+                let e = edge_permutator([
+                    (R, [(1, 0), (1, 1), (1, 2)]),
+                    (D, [(1, 0), (1, 1), (1, 2)]),
+                    (L, [(0, 1), (1, 1), (2, 1)]),
+                    (U, [(0, 1), (1, 1), (2, 1)]),
+                ]);
+                from_arrows(e)
+            }
+            Rotation {
+                axis,
+                indices,
+                clockwise: 1,
+            } if indices.count_ones() == 1 => self
+                .get(Rotation {
+                    axis,
+                    indices,
+                    clockwise: -1,
+                })
+                .inv(),
+            Rotation {
+                axis,
+                indices,
+                clockwise: -1,
+            } if indices.count_ones() == 1 => self
+                .get(Rotation {
+                    axis,
+                    indices,
+                    clockwise: 1,
+                })
+                .inv(),
+            Rotation {
+                axis,
+                indices,
+                clockwise,
+            } => {
+                let rep = (clockwise + 4) % 4;
+                let mut m = PermutationMatrix::identity();
+                for i in 0..3 {
+                    let j = indices & (1 << i);
+                    if j > 0 {
+                        let rot = Rotation {
+                            axis,
+                            indices: j,
+                            clockwise: 1,
+                        };
+                        let op = self.get(rot);
+                        for _ in 0..rep {
+                            m = op * m;
+                        }
+                    }
                 }
-                mat
+                m
             }
         };
-        self.memo.insert((mov, rep), v);
+        self.memo.insert(rot, v);
         v
     }
 }
@@ -227,10 +306,10 @@ static CACHE: Lazy<Mutex<Cache>> = Lazy::new(|| {
     let cache = Cache::new();
     Mutex::new(cache)
 });
-/// Get permutation from a `Command`.
-pub fn of(c: Command) -> PermutationMatrix {
+/// Get permutation from a `Rotation`.
+pub fn of(rot: coord::Rotation) -> PermutationMatrix {
     let mut cache = CACHE.lock().unwrap();
-    cache.get(c.0, c.1)
+    cache.get(rot)
 }
 #[cfg(test)]
 mod tests {
@@ -240,15 +319,16 @@ mod tests {
     #[test]
     fn test_cancel() {
         for mov in MOVE_LIST {
-            let f = of(Command(mov, 1));
-            let g = of(Command(mov, -1));
+            let f = matof(Command(mov, 1));
+            let g = matof(Command(mov, -1));
+            assert_ne!(f, g);
             assert_eq!(g * f, PermutationMatrix::identity());
         }
     }
     #[test]
     fn test_4times() {
         for mov in MOVE_LIST {
-            let f = of(Command(mov, 4));
+            let f = matof(Command(mov, 4));
             assert_eq!(f, PermutationMatrix::identity());
         }
     }
@@ -256,10 +336,10 @@ mod tests {
     fn test_sexy_move_6times() {
         let mut sexy = PermutationMatrix::identity();
         for com in [
-            of(Command(Move::R, 1)),
-            of(Command(Move::U, 1)),
-            of(Command(Move::R, -1)),
-            of(Command(Move::U, -1)),
+            matof(Command(Move::R, 1)),
+            matof(Command(Move::U, 1)),
+            matof(Command(Move::R, -1)),
+            matof(Command(Move::U, -1)),
         ] {
             sexy = com * sexy;
         }
@@ -289,10 +369,10 @@ mod tests {
 
             let mut mat = PermutationMatrix::identity();
             for c in v {
-                mat = of(c) * mat;
+                mat = matof(c) * mat;
             }
             for c in rev {
-                mat = of(c.prime()) * mat;
+                mat = matof(c.prime()) * mat;
             }
             assert_eq!(mat, PermutationMatrix::identity());
         }
