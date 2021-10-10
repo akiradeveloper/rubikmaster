@@ -97,7 +97,7 @@ pub struct Cube {
     state: PermutationMatrix,
     color_list: [Vec4; 54],
 
-    command_queue: VecDeque<Command>,
+    command_queue: VecDeque<Rotation>,
     cur_rotation: Option<RotationProgress>,
     next_state: PermutationMatrix,
 
@@ -114,7 +114,7 @@ pub enum Msg {
 pub struct Props {
     pub init_state: PermutationMatrix,
     #[prop_or_default]
-    pub command_list: Vec<Command>,
+    pub command_list: Vec<Rotation>,
     #[prop_or_default]
     pub blacklist: HashSet<u8>,
 }
@@ -306,7 +306,7 @@ impl Cube {
             self.cur_rotation = None;
             self.state = self.next_state;
             if let Some(head) = self.command_queue.pop_front() {
-                let rot = coord::rotation_of(head);
+                let rot = head;
                 let mut pieces = HashSet::new();
                 for i in 0..3 {
                     if rot.indices & (1 << i) > 0 {
@@ -324,7 +324,7 @@ impl Cube {
                     start_time: timestamp,
                 };
                 self.cur_rotation = Some(new_rot);
-                self.next_state = matrix::of(coord::rotation_of(head)) * self.state;
+                self.next_state = matrix::of(head) * self.state;
             }
 
             // colors should be updated for every move.
