@@ -38,11 +38,15 @@ pub fn f2l_solved(mat: &PermutationMatrix) -> bool {
 pub fn oll_solved(mat: &PermutationMatrix) -> bool {
     same_color_check(mat, U) && f2l_solved(&mat)
 }
+fn matof(c: Command) -> PermutationMatrix {
+    let rot = crate::coord::rotation_of(c);
+    matrix::of(rot)
+}
 #[test]
 fn test_solved_no_effect() {
     let mut m = PermutationMatrix::identity();
     for mov in [Move::x, Move::y, Move::z] {
-        let u = matrix::of(Command(mov, 1));
+        let u = matof(Command(mov, 1));
         for _ in 0..1000 {
             m = u * m;
             assert!(solved(&m));
@@ -53,7 +57,7 @@ fn test_solved_no_effect() {
 fn test_solved() {
     let mut m = PermutationMatrix::identity();
     for mov in [Move::U, Move::D, Move::F, Move::B, Move::R, Move::L] {
-        let c = matrix::of(Command(mov, 1));
+        let c = matof(Command(mov, 1));
         assert!(solved(&m));
         m = c * m;
         assert!(!solved(&m));
@@ -68,40 +72,40 @@ fn test_solved() {
 #[test]
 fn test_f2l_solved_ux() {
     let mut m = PermutationMatrix::identity();
-    let u = matrix::of(Command(Move::U, 1));
+    let u = matof(Command(Move::U, 1));
     m = u * m;
     assert!(oll_solved(&m));
-    let x = matrix::of(Command(Move::x, 1));
+    let x = matof(Command(Move::x, 1));
     m = x * m;
     assert!(!oll_solved(&m));
 }
 #[test]
 fn test_f2l_solved_fx() {
     let mut m = PermutationMatrix::identity();
-    let f = matrix::of(Command(Move::F, 1));
+    let f = matof(Command(Move::F, 1));
     m = f * m;
     assert!(!oll_solved(&m));
-    let x = matrix::of(Command(Move::x, 1));
+    let x = matof(Command(Move::x, 1));
     m = x * m;
     assert!(oll_solved(&m));
 }
 #[test]
 fn test_f2l_solved_lz() {
     let mut m = PermutationMatrix::identity();
-    let f = matrix::of(Command(Move::L, 1));
+    let f = matof(Command(Move::L, 1));
     m = f * m;
     assert!(!oll_solved(&m));
-    let x = matrix::of(Command(Move::z, 1));
+    let x = matof(Command(Move::z, 1));
     m = x * m;
     assert!(oll_solved(&m));
 }
 #[test]
 fn test_f2l_solved_xu() {
     let mut m = PermutationMatrix::identity();
-    let f = matrix::of(Command(Move::x, 1));
+    let f = matof(Command(Move::x, 1));
     m = f * m;
     assert!(oll_solved(&m));
-    let x = matrix::of(Command(Move::U, 1));
+    let x = matof(Command(Move::U, 1));
     m = x * m;
     assert!(oll_solved(&m));
 }
@@ -109,7 +113,7 @@ fn test_f2l_solved_xu() {
 fn test_f2l_solved_no_effect() {
     let mut m = PermutationMatrix::identity();
     for mov in [Move::U, Move::d, Move::x, Move::y, Move::z] {
-        let u = matrix::of(Command(mov, 1));
+        let u = matof(Command(mov, 1));
         for _ in 0..1000 {
             m = u * m;
             assert!(oll_solved(&m));
@@ -131,7 +135,7 @@ fn test_f2l_solved_4times() {
         Move::r,
         Move::l,
     ] {
-        let c = matrix::of(Command(mov, 1));
+        let c = matof(Command(mov, 1));
         assert!(oll_solved(&m));
         m = c * m;
         assert!(!oll_solved(&m));
@@ -226,7 +230,7 @@ fn test_pll_list() {
         let elems = crate::parser::parse(&seq).unwrap().1;
         let cs = crate::flatten(elems);
         for c in cs {
-            m = matrix::of(c) * m;
+            m = matof(c) * m;
         }
         m = m.inv();
         assert!(!solved(&m));
@@ -303,7 +307,7 @@ fn test_oll_list() {
         let elems = crate::parser::parse(&seq).unwrap().1;
         let cs = crate::flatten(elems);
         for c in cs {
-            m = matrix::of(c) * m;
+            m = matof(c) * m;
         }
         m = m.inv();
         assert!(!solved(&m));

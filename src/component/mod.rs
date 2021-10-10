@@ -307,10 +307,12 @@ impl Cube {
             if let Some(head) = self.command_queue.pop_front() {
                 let rot = coord::rotation_of(head);
                 let mut pieces = HashSet::new();
-                for i in rot.indices {
-                    let plane = coord::RotationPlane(rot.axis, i);
-                    for x in coord::piece_group_of(plane) {
-                        pieces.insert(*x);
+                for i in 0..3 {
+                    if rot.indices & (1 << i) > 0 {
+                        let plane = coord::RotationPlane(rot.axis, i - 1);
+                        for x in coord::piece_group_of(plane) {
+                            pieces.insert(*x);
+                        }
                     }
                 }
                 let new_rot = RotationProgress {
@@ -321,7 +323,7 @@ impl Cube {
                     start_time: timestamp,
                 };
                 self.cur_rotation = Some(new_rot);
-                self.next_state = matrix::of(head) * self.state;
+                self.next_state = matrix::of(coord::rotation_of(head)) * self.state;
             }
 
             // colors should be updated for every move.

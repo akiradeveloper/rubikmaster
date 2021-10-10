@@ -221,10 +221,10 @@ pub fn piece_group_of(plane: RotationPlane) -> &'static [Piece; 9] {
 }
 
 /// Representation of rotation corresponding to a `Command`.
-#[derive(Clone)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Rotation {
     pub axis: Axis,
-    pub indices: Vec<i8>,
+    pub indices: u8,
     pub clockwise: i8,
 }
 impl Rotation {
@@ -232,7 +232,7 @@ impl Rotation {
         self.clockwise *= n;
     }
 }
-const fn rot(axis: Axis, indices: Vec<i8>, clockwise: i8) -> Rotation {
+const fn rot(axis: Axis, indices: u8, clockwise: i8) -> Rotation {
     Rotation {
         axis,
         indices,
@@ -253,24 +253,24 @@ impl Cache {
             return v.clone();
         }
         let v = match (mov, rep) {
-            (Move::R, 1) => rot(Axis::X, vec![1], 1),
-            (Move::L, 1) => rot(Axis::X, vec![-1], -1),
-            (Move::U, 1) => rot(Axis::Y, vec![1], 1),
-            (Move::D, 1) => rot(Axis::Y, vec![-1], -1),
-            (Move::F, 1) => rot(Axis::Z, vec![1], 1),
-            (Move::B, 1) => rot(Axis::Z, vec![-1], -1),
-            (Move::r, 1) => rot(Axis::X, vec![0, 1], 1),
-            (Move::l, 1) => rot(Axis::X, vec![-1, 0], -1),
-            (Move::u, 1) => rot(Axis::Y, vec![0, 1], 1),
-            (Move::d, 1) => rot(Axis::Y, vec![-1, 0], -1),
-            (Move::f, 1) => rot(Axis::Z, vec![0, 1], 1),
-            (Move::b, 1) => rot(Axis::Z, vec![-1, 0], 1),
-            (Move::x, 1) => rot(Axis::X, vec![-1, 0, 1], 1),
-            (Move::y, 1) => rot(Axis::Y, vec![-1, 0, 1], 1),
-            (Move::z, 1) => rot(Axis::Z, vec![-1, 0, 1], 1),
-            (Move::M, 1) => rot(Axis::X, vec![0], -1),
-            (Move::E, 1) => rot(Axis::Y, vec![0], -1),
-            (Move::S, 1) => rot(Axis::Z, vec![0], 1),
+            (Move::R, 1) => rot(Axis::X, 0b100, 1),
+            (Move::L, 1) => rot(Axis::X, 0b001, -1),
+            (Move::U, 1) => rot(Axis::Y, 0b100, 1),
+            (Move::D, 1) => rot(Axis::Y, 0b001, -1),
+            (Move::F, 1) => rot(Axis::Z, 0b100, 1),
+            (Move::B, 1) => rot(Axis::Z, 0b001, -1),
+            (Move::r, 1) => rot(Axis::X, 0b110, 1),
+            (Move::l, 1) => rot(Axis::X, 0b011, -1),
+            (Move::u, 1) => rot(Axis::Y, 0b110, 1),
+            (Move::d, 1) => rot(Axis::Y, 0b011, -1),
+            (Move::f, 1) => rot(Axis::Z, 0b110, 1),
+            (Move::b, 1) => rot(Axis::Z, 0b011, 1),
+            (Move::x, 1) => rot(Axis::X, 0b111, 1),
+            (Move::y, 1) => rot(Axis::Y, 0b111, 1),
+            (Move::z, 1) => rot(Axis::Z, 0b111, 1),
+            (Move::M, 1) => rot(Axis::X, 0b010, -1),
+            (Move::E, 1) => rot(Axis::Y, 0b010, -1),
+            (Move::S, 1) => rot(Axis::Z, 0b010, 1),
             (mov, rep) => {
                 let mut rot = self.get(mov, 1);
                 rot.repeat(rep);
