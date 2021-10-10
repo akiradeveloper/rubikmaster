@@ -45,80 +45,87 @@ fn test_pos() {
     assert_eq!(surface_number_inv(44), SurfaceIndex(Surface::F, 2, 2));
 }
 
-/// The index of the piece in range from (-1,-1,-1) to (1,1,1).
+/// The index of the piece in range from (0,0,0) to (2,2,2).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct Piece(pub i8, pub i8, pub i8);
+pub struct Piece(
+    /// x
+    pub u8,
+    /// y
+    pub u8,
+    /// z
+    pub u8
+);
 
 /// Get the surface index of a surface of a piece.
 pub fn surface_index_of(piece: Piece, surface: Surface) -> Option<SurfaceIndex> {
     use Surface::*;
     let Piece(x, y, z) = piece;
     let pos = match (x, y, z, surface) {
-        // x=-1
-        (-1, -1, -1, L) => Some((2, 0)),
-        (-1, -1, -1, D) => Some((2, 0)),
-        (-1, -1, -1, B) => Some((2, 0)),
-        (-1, -1, 0, L) => Some((2, 1)),
-        (-1, -1, 0, D) => Some((1, 0)),
-        (-1, -1, 1, L) => Some((2, 2)),
-        (-1, -1, 1, F) => Some((2, 0)),
-        (-1, -1, 1, D) => Some((0, 0)),
-
-        (-1, 0, -1, L) => Some((1, 0)),
-        (-1, 0, -1, B) => Some((2, 1)),
-        (-1, 0, 0, L) => Some((1, 1)),
-        (-1, 0, 1, L) => Some((1, 2)),
-        (-1, 0, 1, F) => Some((1, 0)),
-
-        (-1, 1, -1, B) => Some((2, 2)),
-        (-1, 1, -1, L) => Some((0, 0)),
-        (-1, 1, -1, U) => Some((2, 0)),
-        (-1, 1, 0, U) => Some((2, 1)),
-        (-1, 1, 0, L) => Some((0, 1)),
-        (-1, 1, 1, L) => Some((0, 2)),
-        (-1, 1, 1, U) => Some((2, 2)),
-        (-1, 1, 1, F) => Some((0, 0)),
-
         // x=0
-        (0, -1, -1, B) => Some((1, 0)),
-        (0, -1, -1, D) => Some((2, 1)),
-        (0, -1, 0, D) => Some((1, 1)),
-        (0, -1, 1, D) => Some((0, 1)),
-        (0, -1, 1, F) => Some((2, 1)),
+        (0, 0, 0, L) => Some((2, 0)),
+        (0, 0, 0, D) => Some((2, 0)),
+        (0, 0, 0, B) => Some((2, 0)),
+        (0, 0, 1, L) => Some((2, 1)),
+        (0, 0, 1, D) => Some((1, 0)),
+        (0, 0, 2, L) => Some((2, 2)),
+        (0, 0, 2, F) => Some((2, 0)),
+        (0, 0, 2, D) => Some((0, 0)),
 
-        (0, 0, -1, B) => Some((1, 1)),
-        (0, 0, 1, F) => Some((1, 1)),
+        (0, 1, 0, L) => Some((1, 0)),
+        (0, 1, 0, B) => Some((2, 1)),
+        (0, 1, 1, L) => Some((1, 1)),
+        (0, 1, 2, L) => Some((1, 2)),
+        (0, 1, 2, F) => Some((1, 0)),
 
-        (0, 1, -1, B) => Some((1, 2)),
-        (0, 1, -1, U) => Some((1, 0)),
-        (0, 1, 0, U) => Some((1, 1)),
-        (0, 1, 1, U) => Some((1, 2)),
-        (0, 1, 1, F) => Some((0, 1)),
+        (0, 2, 0, B) => Some((2, 2)),
+        (0, 2, 0, L) => Some((0, 0)),
+        (0, 2, 0, U) => Some((2, 0)),
+        (0, 2, 1, U) => Some((2, 1)),
+        (0, 2, 1, L) => Some((0, 1)),
+        (0, 2, 2, L) => Some((0, 2)),
+        (0, 2, 2, U) => Some((2, 2)),
+        (0, 2, 2, F) => Some((0, 0)),
 
         // x=1
-        (1, -1, -1, R) => Some((2, 0)),
-        (1, -1, -1, B) => Some((0, 0)),
-        (1, -1, -1, D) => Some((2, 2)),
-        (1, -1, 0, R) => Some((1, 0)),
-        (1, -1, 0, D) => Some((1, 2)),
-        (1, -1, 1, R) => Some((0, 0)),
-        (1, -1, 1, F) => Some((2, 2)),
-        (1, -1, 1, D) => Some((0, 2)),
+        (1, 0, 0, B) => Some((1, 0)),
+        (1, 0, 0, D) => Some((2, 1)),
+        (1, 0, 1, D) => Some((1, 1)),
+        (1, 0, 2, D) => Some((0, 1)),
+        (1, 0, 2, F) => Some((2, 1)),
 
-        (1, 0, -1, R) => Some((2, 1)),
-        (1, 0, -1, B) => Some((0, 1)),
-        (1, 0, 0, R) => Some((1, 1)),
-        (1, 0, 1, R) => Some((0, 1)),
-        (1, 0, 1, F) => Some((1, 2)),
+        (1, 1, 0, B) => Some((1, 1)),
+        (1, 1, 2, F) => Some((1, 1)),
 
-        (1, 1, -1, R) => Some((2, 2)),
-        (1, 1, -1, U) => Some((0, 0)),
-        (1, 1, -1, B) => Some((0, 2)),
-        (1, 1, 0, R) => Some((1, 2)),
-        (1, 1, 0, U) => Some((0, 1)),
-        (1, 1, 1, U) => Some((0, 2)),
-        (1, 1, 1, R) => Some((0, 2)),
-        (1, 1, 1, F) => Some((0, 2)),
+        (1, 2, 0, B) => Some((1, 2)),
+        (1, 2, 0, U) => Some((1, 0)),
+        (1, 2, 1, U) => Some((1, 1)),
+        (1, 2, 2, U) => Some((1, 2)),
+        (1, 2, 2, F) => Some((0, 1)),
+
+        // x=2
+        (2, 0, 0, R) => Some((2, 0)),
+        (2, 0, 0, B) => Some((0, 0)),
+        (2, 0, 0, D) => Some((2, 2)),
+        (2, 0, 1, R) => Some((1, 0)),
+        (2, 0, 1, D) => Some((1, 2)),
+        (2, 0, 2, R) => Some((0, 0)),
+        (2, 0, 2, F) => Some((2, 2)),
+        (2, 0, 2, D) => Some((0, 2)),
+
+        (2, 1, 0, R) => Some((2, 1)),
+        (2, 1, 0, B) => Some((0, 1)),
+        (2, 1, 1, R) => Some((1, 1)),
+        (2, 1, 2, R) => Some((0, 1)),
+        (2, 1, 2, F) => Some((1, 2)),
+
+        (2, 2, 0, R) => Some((2, 2)),
+        (2, 2, 0, U) => Some((0, 0)),
+        (2, 2, 0, B) => Some((0, 2)),
+        (2, 2, 1, R) => Some((1, 2)),
+        (2, 2, 1, U) => Some((0, 1)),
+        (2, 2, 2, U) => Some((0, 2)),
+        (2, 2, 2, R) => Some((0, 2)),
+        (2, 2, 2, F) => Some((0, 2)),
 
         _ => None,
     };
@@ -130,11 +137,11 @@ pub fn surface_index_of(piece: Piece, surface: Surface) -> Option<SurfaceIndex> 
 #[test]
 fn test_surface_index_of() {
     assert_eq!(
-        surface_index_of(Piece(0, 1, -1), Surface::B),
+        surface_index_of(Piece(1, 2, 0), Surface::B),
         Some(SurfaceIndex(Surface::B, 1, 2))
     );
     assert_eq!(
-        surface_index_of(Piece(0, 1, 1), Surface::F),
+        surface_index_of(Piece(1, 2, 2), Surface::F),
         Some(SurfaceIndex(Surface::F, 0, 1))
     );
 }
@@ -142,9 +149,9 @@ fn test_surface_index_of() {
 fn test_surface_index_of_no_dup() {
     use std::collections::HashSet;
     let mut h = HashSet::new();
-    for x in -1..=1 {
-        for y in -1..=1 {
-            for z in -1..=1 {
+    for x in 0..3 {
+        for y in 0..3 {
+            for z in 0..3 {
                 for surface in SURFACE_LIST {
                     let a = surface_index_of(Piece(x, y, z), surface);
                     if let Some(a) = a {
@@ -168,42 +175,46 @@ pub enum Axis {
 }
 
 /// The index of the rotation plane.
-/// (X|Y|Z, -1|0|1)
 #[derive(PartialEq, Eq, Hash)]
-pub struct RotationPlane(pub Axis, pub i8);
+pub struct RotationPlane(
+    /// The rotation axis. x,y,z
+    pub Axis,
+    /// The plane index. 0,1,2
+    pub u8
+);
 
 use std::collections::HashMap;
 
 use crate::Move;
 fn create_plane_group() -> HashMap<RotationPlane, [Piece; 9]> {
     let mut out = HashMap::new();
-    for x in -1..=1 {
+    for x in 0..3 {
         let mut list = [Piece(0, 0, 0); 9];
         let mut i = 0;
-        for y in -1..=1 {
-            for z in -1..=1 {
+        for y in 0..3 {
+            for z in 0..3 {
                 list[i] = Piece(x, y, z);
                 i += 1;
             }
         }
         out.insert(RotationPlane(Axis::X, x), list);
     }
-    for y in -1..=1 {
+    for y in 0..3 {
         let mut list = [Piece(0, 0, 0); 9];
         let mut i = 0;
-        for x in -1..=1 {
-            for z in -1..=1 {
+        for x in 0..3 {
+            for z in 0..3 {
                 list[i] = Piece(x, y, z);
                 i += 1;
             }
         }
         out.insert(RotationPlane(Axis::Y, y), list);
     }
-    for z in -1..=1 {
+    for z in 0..3 {
         let mut list = [Piece(0, 0, 0); 9];
         let mut i = 0;
-        for x in -1..=1 {
-            for y in -1..=1 {
+        for x in 0..3 {
+            for y in 0..3 {
                 list[i] = Piece(x, y, z);
                 i += 1;
             }
@@ -223,8 +234,11 @@ pub fn piece_group_of(plane: RotationPlane) -> &'static [Piece; 9] {
 /// Representation of rotation corresponding to a `Command`.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Rotation {
+    /// The rotation axis.
     pub axis: Axis,
+    /// Plane indices as bits where bits[i] means plane index i is included.
     pub indices: u8,
+    /// (clockwise ? 1 : -1) * rep
     pub clockwise: i8,
 }
 impl Rotation {

@@ -65,9 +65,9 @@ fn calc_blacklist(m: &PermutationMatrix) -> HashSet<u8> {
     let allow_color_list: HashSet<u8> = vec![c0, c1, c2].into_iter().collect();
 
     let mut blacklist = HashSet::new();
-    for x in -1..=1 {
-        for y in -1..=1 {
-            for z in -1..=1 {
+    for x in 0..3 {
+        for y in 0..3 {
+            for z in 0..3 {
                 let p = coord::Piece(x, y, z);
                 let mut surfaces = vec![];
 
