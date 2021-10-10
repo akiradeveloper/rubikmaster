@@ -163,7 +163,7 @@ pub const F2L_LIST: [&str; 41] = [
     "U'RU2'R'Uy'R'U'R",      // 11
     "yUL'U2LU'yLUL'",        // 12
     "yUL'ULU'L'U'L",         // 13
-    "U'RU'RURUR'",           // 14
+    "U'RU'R'URUR'",          // 14
     "yL'ULU2yLUL'",          // 15
     "RU'R'U2y'R'U'R",        // 16
     "RU2'R'U'RUR'",          // 17
