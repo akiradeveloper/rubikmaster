@@ -32,6 +32,13 @@ This library includes the following modules
 
 I am open to any suggestions.
 
+## How to run a demo
+
+To run a demo/cubeviewer
+
+- `cd demo/cubeviewer`
+- `trunk serve`. If you don't have trunk installed please follow the [guide](https://trunkrs.dev/).
+
 ## Author
 
 Akira Hayakawa (@akiradeveloper)
